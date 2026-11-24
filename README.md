@@ -65,7 +65,7 @@ A plain *Transfer* between an everyday wallet and a savings wallet is refused (u
 - **ZA SpaFi**: no categories — money in, money out (with a note), transfers between wallets.
 - **Field work**: categories V1, V2, V3, Field fuel, Community participation, Equipment, Internet, Per diem, Team salary, Transportation,
   each with a progress bar. Their budgets are the amounts in Settings › Field work › *Mission budget per category*; remaining = budget − spent since the mission started.
-  **Start new mission** (Field work block on Home) resets every category to its mission budget. Money received just goes into the wallet where it arrived.
+  **Start new mission** (Field work block on Home) lists what is left from the previous mission: ticked amounts are added to the same budget (or moved to another one), unticked ones go back to 0; then every category gets its mission budget again. Spending made before the new mission is not counted in it. Money received just goes into the wallet where it arrived.
 - Same rule as your personal budgets: money received is recorded in the wallet where it arrived (you tap it, no default); Field work budgets are not tied to a wallet,
   and an expense can be paid from any Field work wallet — it is taken from the total Field work money. The fund block warns when its budgets are more than its money,
   and notes a wallet below 0 (unrecorded withdrawal/transfer).
@@ -87,6 +87,8 @@ The *Savings wallet* box and *Belongs to* (fund) choice appear only on new walle
 **Budgets are not tied to wallets.** A salary sets the budget amounts; you only tap the wallet where the money arrived (no default) so the app knows where it is.
 Any expense can be paid from any wallet. If budgets add up to more than the money in your everyday wallets (savings excluded), Home shows a warning.
 A wallet below 0 just means a withdrawal or transfer was not recorded (e.g. Bank → Cash): record the transfer or adjust the wallet; budgets are not affected.
+
+**Edit budgets** (button above the budget blocks, also in the Field work block): type what is left to spend for each category at any time — e.g. when you start in the middle of a month. The difference is recorded in History.
 
 **Budgets are a plan, wallets are the real money.** Each budget is the amount set for the month; remaining = budget − spent since the last salary. Goals hold the money that is in the savings wallets.
 
