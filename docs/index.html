@@ -255,7 +255,9 @@ const TX = {
   transferSub:'Entre portefeuilles (+ frais)',moveSub:'D\'un budget à un autre',
   amount:'Montant',account:'Portefeuille',date:'Date',note:'Note (facultatif)',category:'Catégorie',save:'Enregistrer',
   saved:'Enregistré',undo:'Annuler',deleted:'Supprimé',tapCat:'Touchez une catégorie pour enregistrer',
-  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',shareInto:'Répartir dans les objectifs',copyLink:'Copier le lien de connexion',linkCopied:'Lien copié — ouvrez-le sur l\'autre appareil',
+  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',pickWallet2:'Choisissez le portefeuille utilisé',storedIn:'Argent reçu dans (pour savoir où il est)',pickWallet:'Choisissez le portefeuille où l\'argent est arrivé',
+  overBudget:'Les budgets ({b}) dépassent l\'argent dans vos portefeuilles ({w}) de {d}. Réduisez un budget ou vérifiez les soldes.',
+  negWallet:'{w} est sous 0 : un retrait ou transfert n\'a sans doute pas été noté (Transfert, ou Ajuster le solde en touchant le portefeuille). Vos budgets ne changent pas.',shareInto:'Répartir dans les objectifs',copyLink:'Copier le lien de connexion',linkCopied:'Lien copié — ouvrez-le sur l\'autre appareil',
   linkHint:'Ouvrez ce lien sur un autre appareil (ou navigateur) pour le connecter en une fois. Il contient votre code d\'accès : ne l\'envoyez qu\'à vous-même.',
   personal:'Personnel',fundsS:'Fonds',notAllocated:'Non réparti',heldIn:'Où est l\'argent',fundIncomeS:'Répartition prévue des entrées',
   adjust:'Ajuster le solde',adjustment:'Ajustement',recorded:'Solde enregistré',actual:'Montant réel',walletHist:'Historique du portefeuille',
@@ -309,7 +311,9 @@ const TX = {
   transferSub:'Between wallets (+ fees)',moveSub:'From one budget to another',
   amount:'Amount',account:'Wallet',date:'Date',note:'Note (optional)',category:'Category',save:'Save',
   saved:'Saved',undo:'Undo',deleted:'Deleted',tapCat:'Tap a category to save',
-  withdrawGoal:'Use savings',advanced:'Advanced options',shareInto:'Share into goals',copyLink:'Copy connection link',linkCopied:'Link copied — open it on the other device',
+  withdrawGoal:'Use savings',advanced:'Advanced options',pickWallet2:'Choose the wallet used',storedIn:'Money received in (to know where it is)',pickWallet:'Choose the wallet where the money arrived',
+  overBudget:'Budgets ({b}) are more than the money in your wallets ({w}) by {d}. Lower a budget or check the wallet balances.',
+  negWallet:'{w} is below 0: a withdrawal or transfer was probably not recorded (Transfer, or Adjust balance by tapping the wallet). Your budgets are not affected.',shareInto:'Share into goals',copyLink:'Copy connection link',linkCopied:'Link copied — open it on the other device',
   linkHint:'Open this link on another device (or browser) to connect it in one step. It contains your access code: only send it to yourself.',
   personal:'Personal',fundsS:'Funds',notAllocated:'Not allocated',heldIn:'Where the money is',fundIncomeS:'Planned split of money received',
   adjust:'Adjust balance',adjustment:'Adjustment',recorded:'Recorded balance',actual:'Actual amount',walletHist:'Wallet history',
@@ -830,12 +834,16 @@ function vHome(){
     <div class="big">${fmt(totW)}</div><div class="sub">${t('heroSub').replace('{b}',fmt(totBud)).replace('{g}',fmt(totSav))}</div></div>`+h;
   h+=`<h2 class="sec s-acc">${t('accounts')}<span class="tot">${fmt(totW)}</span></h2><div class="tiles">`+
     W.map(a=>walletTile(a,AB,'s-acc')).join('')+`</div>`;
-  if(Math.round(B.pool)!==0){
+  if(Math.round(B.pool)>0){
     h+=`<div class="card" style="margin-top:12px"><div class="row"><div class="grow"><b>📥 ${t('toAssign')}</b></div><span class="amt ${B.pool<0?'neg':''}">${fmt(B.pool)}</span></div>
     ${B.pool>0?`<div class="row" style="margin-top:8px"><button class="btn sm" onclick="openSaving('')">${t('toGoals')}</button><button class="btn sm sec" onclick="openMove('')">${t('toCat')}</button></div>`:''}</div>`;
   }
   // Budgets
   const pc=cats(), totB=pc.reduce((s,c)=>s+(B.env['c:'+c.id]||0),0);
+  const budPos=pc.reduce((s,c)=>s+Math.max(0,B.env['c:'+c.id]||0),0);
+  if(Math.round(budPos-totW)>0) h+=`<div class="card" style="margin-top:12px;border-left:4px solid var(--warn)">⚠️ ${t('overBudget').replace('{b}',fmt(budPos)).replace('{w}',fmt(totW)).replace('{d}',fmt(budPos-totW))}</div>`;
+  const negW=W.filter(a=>(B.acc[a.id]||0)<0);
+  if(negW.length) h+=`<div class="card" style="border-left:4px solid var(--over)"><span class="muted">ℹ️ ${t('negWallet').replace('{w}',negW.map(a=>em(a)+' '+nm(a)).join(', '))}</span></div>`;
   h+=`<h2 class="sec s-bud">${t('budgets')}<span class="tot">${fmt(totB)}</span></h2><div class="tiles">`+
     pc.map(c=>budgetTile('c:'+c.id,c,B,spentM,'s-bud')).join('')+`</div>
     <div class="legend2"><span><i style="background:#16a34a"></i>${t('lgUnder')}</span><span><i style="background:var(--over)"></i>${t('lgOver')}</span><span><i style="background:var(--warn)"></i>${t('lgBad')}</span><span><i style="background:var(--ink);width:3px"></i>${t('lgTick')}</span></div>`;
@@ -856,7 +864,10 @@ function fundSection(f,AB,m){
   const held=D.accounts.filter(a=>Math.round(FB.acc[a.id]||0)!==0).map(a=>`${em(a)} ${esc(nm(a))} ${fmtK(FB.acc[a.id])}`).join(' · ');
   let h=`<h2 class="sec" style="--c:${col};color:${col}"><span style="width:10px;height:10px;border-radius:3px;background:${col}"></span>${esc(em(f)+' '+nm(f))}<span class="tot">${fmt(tot)}</span></h2>
     <div class="fundcard" style="--c:${col}"><div class="held">${t('heldIn')}: ${held||'—'}</div>
-    ${f.cats&&Math.round(FB.pool)!==0?`<div class="row" style="margin-bottom:8px"><div class="grow muted">${t('notAllocated')}</div><span class="amt">${fmt(FB.pool)}</span></div>`:''}
+    ${f.cats&&Math.round(FB.pool)>0?`<div class="row" style="margin-bottom:8px"><div class="grow muted">${t('notAllocated')}</div><span class="amt">${fmt(FB.pool)}</span></div>`:''}
+    ${(()=>{ if(!f.cats) return ''; const bp=cats(f.id).reduce((s,c)=>s+Math.max(0,FB.env['c:'+c.id]||0),0);
+      return Math.round(bp-tot)>0?`<div class="muted" style="margin-bottom:8px;color:var(--warn)">⚠️ ${t('overBudget').replace('{b}',fmt(bp)).replace('{w}',fmt(tot)).replace('{d}',fmt(bp-tot))}</div>`:''; })()}
+    ${(()=>{ const neg=fundWallets(f.id).filter(a=>Math.round(FB.acc[a.id]||0)<0); return neg.length?`<div class="muted" style="margin-bottom:8px">ℹ️ ${t('negWallet').replace('{w}',neg.map(a=>em(a)+' '+nm(a)).join(', '))}</div>`:''; })()}
     <div class="row"><button class="btn sm" style="background:${col}" onclick="openIrregular('${f.id}')">💰 ${t('income_t')}</button>
     <button class="btn sm sec" onclick="openExpense('','${f.id}')">🧾 ${t('expense')}</button>
     <button class="btn sm sec" onclick="openTransfer('',0,'${f.id}')">⇄ ${t('transfer')}</button></div></div>`;
@@ -1058,7 +1069,7 @@ document.addEventListener('keydown',e=>{
 /* --- Wallet picker (tap to select one) --- */
 function walletPick(id,sel,list){
   list=list||wallets();
-  if(!list.some(a=>a.id===sel)) sel=list[0]&&list[0].id;
+  if(sel!==null&&!list.some(a=>a.id===sel)) sel=list[0]&&list[0].id;
   return `<div class="pick" data-pick="${id}">${list.map(a=>`<button type="button" class="${a.id===sel?'on':''}" data-v="${a.id}" onclick="pickOne(this)">${esc(em(a))} ${esc(nm(a))}</button>`).join('')}</div>`;
 }
 /** Personal / ZA SpaFi / Field work selector at the top of a form. FUND in the call is replaced by the fund id. */
@@ -1141,7 +1152,8 @@ function openExpense(presetEnv,fund){
   if(presetEnv&&presetEnv.startsWith('c:')) fund=envFund(presetEnv);
   fund=fund||'';
   const B=balances(null,fund), goalPreset=presetEnv&&presetEnv.startsWith('g:');
-  const fw=fundWallets(fund), def=fund?((fw.find(a=>a.fund===fund)||fw[0]||{}).id):(fw.some(a=>a.id===lastAcc)?lastAcc:(fw[0]||{}).id);
+  const fw=fundWallets(fund), lastF=fund?lsGet('bt_lastAcc_'+fund):null;
+  const def=fund?(fw.some(a=>a.id===lastF)?lastF:null):(fw.some(a=>a.id===lastAcc)?lastAcc:(fw[0]||{}).id);
   let body=(presetEnv?'':fundPick(fund,"openExpense('','FUND')"))+calcHtml(0)+(goalPreset?savPick('eSav',defSav(),t('savFrom')):walletPick('eAcc',def,fw))+
     `<div class="two"><div class="f"><input id="eDate" type="date" value="${today()}"></div><div class="f"><input id="eNote" placeholder="${t('note')}"></div></div><div id="eErr" class="err"></div>`;
   if(presetEnv){
@@ -1165,7 +1177,11 @@ function saveExpense(env,fund){
   if(!a){ $('eErr').textContent=t('amount')+' ?'; $('sheet').scrollTop=0; return; }
   let acc;
   if(env.startsWith('g:')&&pickVal('eSav')) acc=pickVal('eSav');
-  else { acc=pickVal('eAcc')||lastAcc; if(!fund){ lastAcc=acc; lsSet('bt_lastAcc',acc); } }
+  else {
+    acc=pickVal('eAcc')||(fund?'':lastAcc);
+    if(!acc){ $('eErr').textContent=t('pickWallet2'); $('sheet').scrollTop=0; return; }
+    if(fund) lsSet('bt_lastAcc_'+fund,acc); else { lastAcc=acc; lsSet('bt_lastAcc',acc); }
+  }
   commit([row({type:'expense',amount:a,acc,env,fund:fund||'',date:$('eDate').value||today(),grp:uid(),note:$('eNote').value})]);
 }
 
@@ -1178,7 +1194,7 @@ function openSalaryPick(){
 }
 function openSalary(id){
   const s=(D.settings.salaries||[]).find(x=>x.id===id), m=monthOf(today());
-  W={s,amount:num(s.amount),acc:s.account||'bank',sav:defSav(),date:today(),month:m,lines:(s.lines||[]).map(l=>({env:l.env,amount:num(l.amount)})),
+  W={s,amount:num(s.amount),acc:null,sav:defSav(),date:today(),month:m,lines:(s.lines||[]).map(l=>({env:l.env,amount:num(l.amount)})),
      left:[],leftMode:'keep',leftEnv:'g:land',i:0};
   // First salary of the month: offer to reallocate what is left in the budgets
   const first=!D.ledger.some(r=>r.ref&&r.ref.startsWith('sal-')&&r.ref.endsWith('-'+m));
@@ -1207,7 +1223,7 @@ function leftTotal(){ return W.left.filter(x=>x.on).reduce((s,x)=>s+x.amount,0);
 function wizRender(){
   const st=W.seq[W.i], n=W.lines.length; let body='';
   if(st==='head'){
-    body=calcHtml(W.amount,t('received'))+walletPick('wAcc',W.acc)+
+    body=calcHtml(W.amount,t('received'))+`<div class="lbl">${t('storedIn')}</div>`+walletPick('wAcc',W.acc)+`<div id="wErr" class="err"></div>`+
       ((W.lines.some(l=>l.env.startsWith('g:'))||W.left.length)?savPick('wSav',W.sav,t('savPartTo')):'')+
       `<div class="two"><div class="f"><label>${t('forMonth')}</label><input id="wMonth" type="month" value="${W.month}"></div>
       <div class="f"><label>${t('date')}</label><input id="wDate" type="date" value="${W.date}"></div></div>
@@ -1242,7 +1258,7 @@ function wizStore(){
   if(st==='head'){ W.amount=calcVal(); W.acc=pickVal('wAcc')||W.acc; W.sav=pickVal('wSav')||W.sav; W.month=$('wMonth').value||W.month; W.date=$('wDate').value||W.date; }
   else if(typeof st==='number'){ W.lines[st].amount=calcVal(); }
 }
-function wizNext(){ wizStore(); if(W.seq[W.i]==='head'&&!W.amount) return; W.i=Math.min(W.seq.length-1,W.i+1); wizRender(); }
+function wizNext(){ wizStore(); if(W.seq[W.i]==='head'&&(!W.amount||!W.acc)){ if(!W.acc) $('wErr').textContent=t('pickWallet'); return; } W.i=Math.min(W.seq.length-1,W.i+1); wizRender(); }
 function wizBack(){ wizStore(); W.i=Math.max(0,W.i-1); wizRender(); }
 function wizSave(){
   const ref='sal-'+W.s.id+'-'+W.month;
@@ -1306,14 +1322,14 @@ function openIrregular(fund){
   const R=D.settings.irregular||{};
   if(fund){
     const fw=fundWallets(fund), own=fw.find(a=>a.fund===fund);
-    sheet('💰 '+t('irregular'),fundPick(fund,"openIrregular('FUND')")+calcHtml(0)+walletPick('iAcc',(own||fw[0]||{}).id,fw)+
+    sheet('💰 '+t('irregular'),fundPick(fund,"openIrregular('FUND')")+calcHtml(0)+`<div class="lbl">${t('storedIn')}</div>`+walletPick('iAcc',null,fw)+
       `<div class="two"><div class="f"><input id="iDate" type="date" value="${today()}"></div><div class="f"><input id="iNote" placeholder="${t('note')}"></div></div>`+
       (cats(fund).length?`<button class="btn block" id="pvGo" style="background:${fundColor(fund)}" onclick="fundIncPreview('${fund}')">${t('preview')}</button>`
-        :`<button class="btn block" id="pvGo" style="background:${fundColor(fund)}" onclick="P={total:calcVal(),lines:[],fund:'${fund}'};if(P.total)irregSave()">${t('save')}</button>`)+
+        :`<button class="btn block" id="pvGo" style="background:${fundColor(fund)}" onclick="if(!pickVal('iAcc')){toast(t('pickWallet'));return;}P={total:calcVal(),lines:[],fund:'${fund}'};if(P.total)irregSave()">${t('save')}</button>`)+
       `<div id="pvWrap" style="margin-top:10px"></div><div id="pvBtn"></div>`+keypadHtml());
     return;
   }
-  sheet('💰 '+t('irregular'),fundPick('',"openIrregular('FUND')")+calcHtml(0)+walletPick('iAcc',R.account||'bank')+
+  sheet('💰 '+t('irregular'),fundPick('',"openIrregular('FUND')")+calcHtml(0)+`<div class="lbl">${t('storedIn')}</div>`+walletPick('iAcc',null)+
     `<div class="two"><div class="f"><input id="iDate" type="date" value="${today()}"></div><div class="f"><input id="iNote" placeholder="${t('note')}"></div></div>
     ${savPick('iSav',defSav(),t('savPartTo'))}
     <div class="lbl">${t('destination')}</div>
@@ -1326,12 +1342,14 @@ function openIrregular(fund){
 function irMode(){ const one=pickVal('iMode')==='one'; $('iOne').style.display=one?'':'none'; $('iAutoTxt').style.display=one?'none':''; $('pvGo').textContent=one?t('save'):t('preview'); pvHide(); }
 function irregPreview(){
   const a=calcVal(); if(!a) return;
+  if(!pickVal('iAcc')){ toast(t('pickWallet')); return; }
   if(pickVal('iMode')==='one'){ P={total:a,lines:[{env:$('iEnv').value,amount:a}]}; irregSave(); return; }
   pvShow(irregularSplit(a,$('iDate').value||today()),'irregSave');
 }
 /** Field work money received: split across its categories with the planned amounts. */
 function fundIncPreview(fund){
   const a=calcVal(); if(!a) return;
+  if(!pickVal('iAcc')){ toast(t('pickWallet')); return; }
   const plan=((D.settings.fundIncome||{})[fund]||{}).lines||[];
   let left=a; const lines=plan.map(l=>{ const x=Math.min(num(l.amount),left); left-=x; return {env:l.env,amount:x}; }).filter(l=>l.amount>0);
   pvShow(lines,'irregSave',{fund});
@@ -1476,7 +1494,6 @@ function vSettings(){
     const tot=(s.lines||[]).reduce((a,l)=>a+num(l.amount),0);
     sal+=`<div class="card" id="sal${si}"><div class="edS"><input value="${esc(s.name_fr)}" data-k="name_fr" placeholder="${t('nameFr')}"><input value="${esc(s.name_en)}" data-k="name_en" placeholder="${t('nameEn')}"></div>
       <div class="f" style="margin-top:8px"><label>${t('amount')}</label><input inputmode="numeric" value="${fmtIn(s.amount)}" data-k="amount" oninput="this.value=fmtIn(num(this.value))"></div>
-      <div class="lbl">${t('defAccount')}</div>${walletPick('salAcc'+si,s.account)}
       <div class="lbl">${t('lines')}</div>`+
       (s.lines||[]).map((l,li)=>`<div class="line"><select data-l="${li}" data-f="env">${envOptions(l.env)}</select><input inputmode="numeric" data-l="${li}" data-f="amount" value="${fmtIn(l.amount)}" oninput="this.value=fmtIn(num(this.value))"><button class="btn ghost sm" onclick="salLine(${si},'del',${li})">✕</button></div>`).join('')+
       `<button class="btn ghost sm" onclick="salLine(${si},'add')">${t('addLine')}</button>
@@ -1492,7 +1509,6 @@ function vSettings(){
     <div><label class="muted">${t('savingsPct')}</label><input id="irPct" type="number" min="0" max="100" value="${num(R.savingsPct)}"></div></div>
     <div class="lbl" style="margin-top:8px">${t('personalCats')}</div><div class="chips" style="margin-bottom:8px">${cats().map(c=>`<label class="check" style="margin:2px 6px 2px 0;font-size:13px"><input type="checkbox" class="irP" value="${c.id}" ${(R.personal||[]).includes(c.id)?'checked':''}> ${esc(em(c)+' '+nm(c))}</label>`).join('')}</div>
     <div class="f"><label>${t('remainderGoal')}</label><select id="irRem">${gOpt(R.remainderGoal||'land',true)}</select></div>
-    <div class="lbl">${t('defAccount')}</div>${walletPick('irAcc',R.account)}
     <div class="lbl">🎯 ${t('saving')} — ${t('shareHow')}</div><div class="pick" data-pick="savMode">${['equal','need'].map(m=>`<button type="button" class="${(S.savingMode||'equal')===m?'on':''}" data-v="${m}" onclick="pickOne(this)">${m==='equal'?'⚖️ '+t('equalParts'):'📈 '+t('byNeed')}</button>`).join('')}</div>
     <button class="btn sm" style="background:${SC.irr}" onclick="irSave()">${t('save')}</button></div>`);
   // funds
@@ -1550,8 +1566,8 @@ function edItem(table,o){
   if(table==='Accounts'){
     const tag=o.fund?fundName(o.fund):isTrue(o.savings)?'🎯 '+t('savWallet'):o.spend?'🛒 → '+envName('c:'+o.spend):'';
     if(tag&&!fresh) x+=`<div class="lb">${esc(tag)}</div>`;
-    if(isTrue(o.savings)&&!fresh) x+=`<button class="btn sm sec" onclick="openWallet('${o.id}')">🔧 ${t('adjust')}</button>`;
-    else x+=`<div class="lb">${t('opening')}</div><input data-k="opening" inputmode="numeric" value="${fmtIn(o.opening)}" oninput="this.value=fmtIn(num(this.value))">`;
+    // the amount of a wallet is set with "Adjust balance" (dated entry in its history), not an opening balance
+    if(!fresh&&!o.spend) x+=`<button class="btn sm sec" onclick="openWallet('${o.id}')">🔧 ${t('adjust')}</button>`;
     if(fresh) x+=`<label class="ck"><input type="checkbox" data-k="savings" ${isTrue(o.savings)?'checked':''}> ${t('isSavAcc')}</label>
       <div class="lb">${t('belongsTo')}</div><select data-k="fund">${[''].concat(funds().map(f=>f.id)).map(f=>`<option value="${f}" ${(o.fund||'')===f?'selected':''}>${esc(fundName(f))}</option>`).join('')}</select>`;
   }
@@ -1602,14 +1618,14 @@ function planSave(fund){
 function salCollect(si){
   const s=D.settings.salaries[si], box=$('sal'+si);
   box.querySelectorAll('[data-k]').forEach(i=>{ s[i.dataset.k]=i.dataset.k==='amount'?num(i.value):i.value; });
-  s.account=pickVal('salAcc'+si)||s.account;
+
   box.querySelectorAll('[data-l]').forEach(i=>{ const l=s.lines[+i.dataset.l]; l[i.dataset.f]=i.dataset.f==='amount'?num(i.value):i.value; });
 }
 function salLine(si,act,li){ salCollect(si); const s=D.settings.salaries[si]; if(act==='add') s.lines.push({env:'c:food',amount:0}); else s.lines.splice(li,1); render(); }
 function salSave(si){ salCollect(si); call('apiSetSetting','salaries',D.settings.salaries).then(()=>{toast(t('saved'));render();}).catch(e=>toast(t('error')+': '+e)); }
 function irSave(){
   D.settings.irregular={threshold:num($('irTh').value),savingsPct:num($('irPct').value),
-    personal:[...document.querySelectorAll('.irP:checked')].map(i=>i.value),account:pickVal('irAcc'),remainderGoal:$('irRem').value||'land'};
+    personal:[...document.querySelectorAll('.irP:checked')].map(i=>i.value),remainderGoal:$('irRem').value||'land'};
   D.settings.savingMode=pickVal('savMode')||'equal'; call('apiSetSetting','savingMode',D.settings.savingMode);
   call('apiSetSetting','irregular',D.settings.irregular).then(()=>{toast(t('saved'));render();}).catch(e=>toast(t('error')+': '+e));
 }

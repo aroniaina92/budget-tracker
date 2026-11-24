@@ -65,13 +65,16 @@ A plain *Transfer* between an everyday wallet and a savings wallet is refused (u
 - **ZA SpaFi**: no categories — money in, money out (with a note), transfers between wallets.
 - **Field work**: categories V1, V2, V3, Field fuel, Community participation, Equipment, Internet, Per diem, Team salary, Transportation,
   each with a progress bar. Money received is split across them with the planned amounts (Settings › Field work › *Planned split*); the rest stays *Not allocated*.
+- Same rule as your personal budgets: money received is recorded in the wallet where it arrived (you tap it, no default); Field work budgets are not tied to a wallet,
+  and an expense can be paid from any Field work wallet — it is taken from the total Field work money. The fund block warns when its budgets are more than its money,
+  and notes a wallet below 0 (unrecorded withdrawal/transfer).
 - Home shows one coloured block per fund (total, where the money is, Income / Expense / Transfer buttons). Reports can be filtered by fund.
 
 **Wallets.** Tap any wallet block to see its **history** and **adjust its balance** (type the real amount):
 - everyday wallet → the difference goes to/from *To assign*;
 - savings wallet → an added amount is shared between goals (equal parts by default, *By need* on request); a removed amount is taken in equal parts from each goal that holds money;
 - for a shared wallet, choose whose money is adjusted (Personal / ZA SpaFi / Field work).
-Savings wallets are shown on the **Goals** page. Their amount is set with *Adjust balance* (not an opening balance), so it goes straight into the goals; if they hold money not yet in a goal, the Goals page shows *Share into goals*.
+Savings wallets are shown on the **Goals** page. Their amount is set with *Adjust balance*, so it goes straight into the goals; if they hold money not yet in a goal, the Goals page shows *Share into goals*.
 
 **Saving** (from *To assign* into goals): equal parts by default (remainder to Land), with a *By need* option. The default can be changed in Settings.
 
@@ -79,6 +82,10 @@ Savings wallets are shown on the **Goals** page. Their amount is set with *Adjus
 The *Savings wallet* box and *Belongs to* (fund) choice appear only on new wallets.
 
 **Back**: the phone's back button (or ← at the top) closes the open form, then goes back page by page to Home; back on Home leaves the app.
+
+**Budgets are not tied to wallets.** A salary sets the budget amounts; you only tap the wallet where the money arrived (no default) so the app knows where it is.
+Any expense can be paid from any wallet. If budgets add up to more than the money in your everyday wallets (savings excluded), Home shows a warning.
+A wallet below 0 just means a withdrawal or transfer was not recorded (e.g. Bank → Cash): record the transfer or adjust the wallet; budgets are not affected.
 
 **Budgets and goals are envelopes.** Money that comes in is put in envelopes; expenses take money out. **To assign** = money in your wallets not yet in an envelope.
 
