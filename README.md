@@ -8,10 +8,9 @@ Default language: English (FR button to switch).
 
 | Folder / file | What it is |
 |---|---|
-| `app/` | The app: `index.html`, `manifest.webmanifest`, `sw.js` (offline cache), icons, `bg.svg` (background) — published on GitHub Pages |
+| `docs/` | The app (published by GitHub Pages from the `docs` folder): `index.html`, `manifest.webmanifest`, `sw.js` (offline cache), icons, `bg.svg` (background) — published on GitHub Pages |
 | `apps-script/Code.gs`, `apps-script/appsscript.json` | The Google Sheet side (sync API) |
 
-The old files at the top of this folder (`Code.gs`, `Index.html`, `appsscript.json`) are from the previous version and can be deleted.
 
 ## Installation (once, ~15 minutes)
 
@@ -24,8 +23,8 @@ The old files at the top of this folder (`Code.gs`, `Index.html`, `appsscript.js
    "Anyone" is needed so the app can reach it; every request without your access code is refused.
 
 ### 2. Publish the app (GitHub Pages)
-1. Create a GitHub repository (e.g. `budget`) and push the **content of `app/`** to it.
-2. Repository **Settings › Pages** › Source: *Deploy from a branch* › `main` / `root` → Save.
+1. Push this folder to a GitHub repository (e.g. `budget`).
+2. Repository **Settings › Pages** › Source: *Deploy from a branch* › `main` / **`/docs`** → Save.
 3. After a minute the app is at `https://<your-account>.github.io/budget/`.
    The page contains no data: your data stays on your devices and in your Sheet.
 
@@ -51,6 +50,35 @@ it is used the next time the app is opened. If `Code.gs` changes: paste it, then
 The default image is an illustration (`bg.svg`). Settings › *Background image* › *Choose a photo* uses your own photo (kept on that device).
 
 ## How it works
+
+**Savings wallets.** Your savings are physically kept in **🏛️ Savings – Bank** and **💰 Savings – Cash** (renamable, more can be added: Settings › Wallets › *Savings wallet*).
+They are shown separately on Home and are **not counted in "Total in wallets"**. Every movement into or out of savings says which wallet:
+the savings part of a salary or additional income goes into the chosen savings wallet; *Saving* moves money from a wallet into a savings wallet;
+spending Urgency/Health or a goal asks which savings wallet the money is taken from; a *Savings transfer* to a budget says from which savings wallet and into which wallet.
+Goals total should equal the savings wallets total; if not, Home shows a warning with a *Fix* button (transfer the difference from the bank).
+A plain *Transfer* between an everyday wallet and a savings wallet is refused (use *Saving* or *Savings transfer*); transfers between two savings wallets are fine.
+
+**Funds — ZA SpaFi and Field work.** Money that is not yours is kept apart: it is never counted in your wallets total, budgets or savings.
+- Every entry form starts with a selector **👤 Personal / 🎶 ZA SpaFi / 🧭 Field work**.
+- Fund money can sit in a shared wallet (Bank, Savings – Bank, Cash…) or in the fund's own wallet (*ZA SpaFi wallet*, *Field work cash*).
+  Wallet blocks show your personal part and, below, the funds' parts (e.g. "+ 🎶 250 k · 🧭 1 M").
+- **ZA SpaFi**: no categories — money in, money out (with a note), transfers between wallets.
+- **Field work**: categories V1, V2, V3, Field fuel, Community participation, Equipment, Internet, Per diem, Team salary, Transportation,
+  each with a progress bar. Money received is split across them with the planned amounts (Settings › Field work › *Planned split*); the rest stays *Not allocated*.
+- Home shows one coloured block per fund (total, where the money is, Income / Expense / Transfer buttons). Reports can be filtered by fund.
+
+**Wallets.** Tap any wallet block to see its **history** and **adjust its balance** (type the real amount):
+- everyday wallet → the difference goes to/from *To assign*;
+- savings wallet → an added amount is shared between goals (equal parts by default, *By need* on request); a removed amount is taken in equal parts from each goal that holds money;
+- for a shared wallet, choose whose money is adjusted (Personal / ZA SpaFi / Field work).
+Savings wallets are shown on the **Goals** page.
+
+**Saving** (from *To assign* into goals): equal parts by default (remainder to Land), with a *By need* option. The default can be changed in Settings.
+
+**Settings**: coloured sections; wallets, categories and goals are blocks. *Delete* is offered only for items never used; used items can be *Hidden* (they stay in past entries).
+The *Savings wallet* box and *Belongs to* (fund) choice appear only on new wallets.
+
+**Back**: the phone's back button (or ← at the top) closes the open form, then goes back page by page to Home; back on Home leaves the app.
 
 **Budgets and goals are envelopes.** Money that comes in is put in envelopes; expenses take money out. **To assign** = money in your wallets not yet in an envelope.
 

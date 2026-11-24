@@ -14,10 +14,10 @@
  */
 
 var TABLES = {
-  Accounts:   ['id', 'name_fr', 'name_en', 'opening', 'active', 'order', 'emoji', 'spend'],
-  Categories: ['id', 'name_fr', 'name_en', 'active', 'order', 'emoji'],
+  Accounts:   ['id', 'name_fr', 'name_en', 'opening', 'active', 'order', 'emoji', 'spend', 'savings', 'fund'],
+  Categories: ['id', 'name_fr', 'name_en', 'active', 'order', 'emoji', 'fund'],
   Goals:      ['id', 'name_fr', 'name_en', 'kind', 'target', 'deadline', 'yearly', 'active', 'order', 'emoji'],
-  Ledger:     ['id', 'date', 'type', 'amount', 'acc', 'acc2', 'env', 'env2', 'grp', 'ref', 'note', 'created'],
+  Ledger:     ['id', 'date', 'type', 'amount', 'acc', 'acc2', 'env', 'env2', 'grp', 'ref', 'note', 'created', 'fund'],
   Settings:   ['key', 'value']
 };
 
@@ -31,7 +31,7 @@ var TEXT_COLS = { Goals: ['deadline'], Ledger: ['date', 'ref', 'created'] };
  */
 var API = {
   apiGetAll: apiGetAll, apiInit: apiInit, apiAppend: apiAppend, apiDeleteGroup: apiDeleteGroup,
-  apiUpsert: apiUpsert, apiBulkUpsert: apiBulkUpsert, apiSetSetting: apiSetSetting
+  apiUpsert: apiUpsert, apiBulkUpsert: apiBulkUpsert, apiSetSetting: apiSetSetting, apiDeleteItem: apiDeleteItem
 };
 
 function doPost(e) {
@@ -259,6 +259,23 @@ function apiBulkUpsert(table, list) {
       sh.getRange(sh.getLastRow() + 1, 1, 1, width).setValues([row]);
       values.push(row);
     });
+    return true;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Deletes one account / category / goal (the app only allows it when it was never used). */
+function apiDeleteItem(table, id) {
+  if (['Accounts', 'Categories', 'Goals'].indexOf(table) < 0) throw new Error('Bad table');
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh = sheet_(table);
+    var values = sh.getDataRange().getValues();
+    for (var i = values.length - 1; i >= 1; i--) {
+      if (String(values[i][0]) === String(id)) sh.deleteRow(i + 1);
+    }
     return true;
   } finally {
     lock.releaseLock();
