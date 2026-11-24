@@ -32,7 +32,7 @@ Default language: English (FR button to switch).
 1. Open the GitHub Pages address in **Chrome** › menu **⋮ › Install app** (or *Add to home screen*).
 2. Open the installed app › **⚙ Settings › Google Sheet sync** › paste the **Web app URL** and the **access code** › **Connect**.
    If the Sheet is empty, what is on the phone is sent to it; otherwise the Sheet's data is loaded.
-3. Repeat on the computer if you want (same URL and code).
+3. Other devices or browsers: in Settings › Google Sheet sync, tap **Copy connection link** and open that link on the other device — it connects in one step (the link contains your access code: keep it to yourself).
 
 ## Offline and sync
 
@@ -71,7 +71,7 @@ A plain *Transfer* between an everyday wallet and a savings wallet is refused (u
 - everyday wallet → the difference goes to/from *To assign*;
 - savings wallet → an added amount is shared between goals (equal parts by default, *By need* on request); a removed amount is taken in equal parts from each goal that holds money;
 - for a shared wallet, choose whose money is adjusted (Personal / ZA SpaFi / Field work).
-Savings wallets are shown on the **Goals** page.
+Savings wallets are shown on the **Goals** page. Their amount is set with *Adjust balance* (not an opening balance), so it goes straight into the goals; if they hold money not yet in a goal, the Goals page shows *Share into goals*.
 
 **Saving** (from *To assign* into goals): equal parts by default (remainder to Land), with a *By need* option. The default can be changed in Settings.
 

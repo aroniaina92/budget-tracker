@@ -255,7 +255,8 @@ const TX = {
   transferSub:'Entre portefeuilles (+ frais)',moveSub:'D\'un budget à un autre',
   amount:'Montant',account:'Portefeuille',date:'Date',note:'Note (facultatif)',category:'Catégorie',save:'Enregistrer',
   saved:'Enregistré',undo:'Annuler',deleted:'Supprimé',tapCat:'Touchez une catégorie pour enregistrer',
-  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',
+  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',shareInto:'Répartir dans les objectifs',copyLink:'Copier le lien de connexion',linkCopied:'Lien copié — ouvrez-le sur l\'autre appareil',
+  linkHint:'Ouvrez ce lien sur un autre appareil (ou navigateur) pour le connecter en une fois. Il contient votre code d\'accès : ne l\'envoyez qu\'à vous-même.',
   personal:'Personnel',fundsS:'Fonds',notAllocated:'Non réparti',heldIn:'Où est l\'argent',fundIncomeS:'Répartition prévue des entrées',
   adjust:'Ajuster le solde',adjustment:'Ajustement',recorded:'Solde enregistré',actual:'Montant réel',walletHist:'Historique du portefeuille',
   whose:'Argent de',nothingToAdjust:'Aucune différence',addedSplit:'Le montant ajouté est partagé entre les objectifs',removedSplit:'Le montant retiré est pris sur chaque objectif',
@@ -308,7 +309,8 @@ const TX = {
   transferSub:'Between wallets (+ fees)',moveSub:'From one budget to another',
   amount:'Amount',account:'Wallet',date:'Date',note:'Note (optional)',category:'Category',save:'Save',
   saved:'Saved',undo:'Undo',deleted:'Deleted',tapCat:'Tap a category to save',
-  withdrawGoal:'Use savings',advanced:'Advanced options',
+  withdrawGoal:'Use savings',advanced:'Advanced options',shareInto:'Share into goals',copyLink:'Copy connection link',linkCopied:'Link copied — open it on the other device',
+  linkHint:'Open this link on another device (or browser) to connect it in one step. It contains your access code: only send it to yourself.',
   personal:'Personal',fundsS:'Funds',notAllocated:'Not allocated',heldIn:'Where the money is',fundIncomeS:'Planned split of money received',
   adjust:'Adjust balance',adjustment:'Adjustment',recorded:'Recorded balance',actual:'Actual amount',walletHist:'Wallet history',
   whose:'Money of',nothingToAdjust:'No difference',addedSplit:'The added amount is shared between goals',removedSplit:'The removed amount is taken from each goal',
@@ -874,7 +876,7 @@ function vGoals(){
     const totS=SW.reduce((s,a)=>s+(B.acc[a.id]||0),0), totG=acts(D.goals).reduce((s,g)=>s+(B.env['g:'+g.id]||0),0);
     h+=`<h2 class="sec s-goal" style="margin-top:4px">${t('savWallets')}<span class="tot">${fmt(totS)}</span></h2><div class="tiles">`+SW.map(a=>walletTile(a,AB,'s-goal')).join('')+`</div>`;
     if(Math.round(totS-totG)!==0) h+=`<div class="card" style="margin-top:8px;border-left:4px solid var(--over)"><div class="row"><div class="grow muted">⚠️ ${t('savMismatch').replace('{g}',fmt(totG)).replace('{w}',fmt(totS))}</div>
-      ${totG>totS?`<button class="btn sm" onclick="openTransfer('${defSav()}',${Math.round(totG-totS)})">${t('savFix')}</button>`:''}</div></div>`;
+      ${totG>totS?`<button class="btn sm" onclick="openTransfer('${defSav()}',${Math.round(totG-totS)})">${t('savFix')}</button>`:`<button class="btn sm" onclick="openSaving('',${Math.round(totS-totG)})">${t('shareInto')}</button>`}</div></div>`;
     h+=`<h2 class="sec s-goal">${t('goals')}<span class="tot">${fmt(totG)}</span></h2>`;
   }
   return h+`<div class="gtiles">`+acts(D.goals).map((g,i)=>{
@@ -1343,11 +1345,17 @@ function irregSave(){
 }
 
 /* ----- Saving: money from "To assign" (or a budget) into goals, by need ----- */
-function openSaving(src){
-  const B=balances();
+function savExcess(){ // money in savings wallets that is not in any goal yet
+  const B=balances(); const totS=savWallets().reduce((s,a)=>s+(B.acc[a.id]||0),0), totG=acts(D.goals).reduce((s,g)=>s+(B.env['g:'+g.id]||0),0);
+  return Math.round(totS-totG);
+}
+function openSaving(src,amount,from){
+  const B=balances(), ex=savExcess();
+  // if savings wallets already hold unallocated money, it comes from there by default (nothing leaves the bank)
+  const defFrom=from||(ex>0?(savWallets().find(a=>(B.acc[a.id]||0)>0)||{}).id||defSav():((D.settings.irregular||{}).account||'bank'));
   sheet('🎯 '+t('saving'),`<div class="f"><label>${t('source')}</label><select id="sSrc">${envOptions(src,{pool:true})}</select></div>`+
-    calcHtml(src===''&&B.pool>0?B.pool:0)+
-    `<div class="lbl">${t('moneyFrom')}</div>${walletPick('sFrom',(D.settings.irregular||{}).account||'bank',wallets().concat(savWallets()))}`+
+    calcHtml(amount||(src===''&&B.pool>0?(ex>0?Math.min(ex,B.pool):B.pool):0))+
+    `<div class="lbl">${t('moneyFrom')}</div>${walletPick('sFrom',defFrom,wallets().concat(savWallets()))}`+
     savPick('sTo',defSav(),t('savIn'))+
     `<div class="f"><input id="sDate" type="date" value="${today()}"></div>
     <button class="btn block" id="pvGo" onclick="savPreview()">${t('preview')}</button>
@@ -1449,7 +1457,7 @@ function sec(title,col,inner){ return `<section class="sset" style="--c:${col}">
 function vSettings(){
   const S=D.settings; let h='';
   h+=sec('☁ '+t('syncS'),SC.sync,`<div class="card" id="syncBox"><div id="syncState">${syncStateHtml()}</div>
-    ${CONN?`<button class="btn ghost sm" onclick="disconnectSheet()">${t('disconnect')}</button>`:
+    ${CONN?`<button class="btn sm sec" onclick="copyConnLink()">🔗 ${t('copyLink')}</button> <button class="btn ghost sm" onclick="disconnectSheet()">${t('disconnect')}</button><div class="muted" style="margin-top:6px">${t('linkHint')}</div>`:
     `<div class="f" style="margin-top:10px"><label>${t('apiUrl')}</label><input id="cUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
      <div class="f"><label>${t('token')}</label><input id="cTok" autocomplete="off"></div>
      <button class="btn sm" onclick="connectSheet()">${t('connect')}</button> <span id="cMsg" class="muted"></span>`}</div>`);
@@ -1542,7 +1550,8 @@ function edItem(table,o){
   if(table==='Accounts'){
     const tag=o.fund?fundName(o.fund):isTrue(o.savings)?'🎯 '+t('savWallet'):o.spend?'🛒 → '+envName('c:'+o.spend):'';
     if(tag&&!fresh) x+=`<div class="lb">${esc(tag)}</div>`;
-    x+=`<div class="lb">${t('opening')}</div><input data-k="opening" inputmode="numeric" value="${fmtIn(o.opening)}" oninput="this.value=fmtIn(num(this.value))">`;
+    if(isTrue(o.savings)&&!fresh) x+=`<button class="btn sm sec" onclick="openWallet('${o.id}')">🔧 ${t('adjust')}</button>`;
+    else x+=`<div class="lb">${t('opening')}</div><input data-k="opening" inputmode="numeric" value="${fmtIn(o.opening)}" oninput="this.value=fmtIn(num(this.value))">`;
     if(fresh) x+=`<label class="ck"><input type="checkbox" data-k="savings" ${isTrue(o.savings)?'checked':''}> ${t('isSavAcc')}</label>
       <div class="lb">${t('belongsTo')}</div><select data-k="fund">${[''].concat(funds().map(f=>f.id)).map(f=>`<option value="${f}" ${(o.fund||'')===f?'selected':''}>${esc(fundName(f))}</option>`).join('')}</select>`;
   }
@@ -1639,6 +1648,16 @@ function connectSheet(){
     .then(()=>render())
     .catch(e=>{ CONN=prev; $('cMsg').textContent='⚠️ '+(String(e.message||e)==='AUTH'?t('authErr'):(e.message||e)); });
 }
+function copyConnLink(){
+  const link=location.origin+location.pathname+'#connect='+btoa(JSON.stringify(CONN));
+  (navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject()).then(()=>toast(t('linkCopied'))).catch(()=>prompt(t('copyLink'),link));
+}
+/** Opening the app with #connect=… (link copied on another device) connects it to the Sheet automatically. */
+function connectFromLink(){
+  const m=location.hash.match(/#connect=([^&]+)/); if(!m) return;
+  try{ const c=JSON.parse(atob(decodeURIComponent(m[1]))); if(c.url&&c.token){ CONN=c; lsSet(LS_CONN,JSON.stringify(CONN)); toast(t('connOk')); } }catch(e){}
+  history.replaceState({v:'home'},'',location.pathname);
+}
 function disconnectSheet(){ CONN=null; try{ localStorage.removeItem(LS_CONN); }catch(e){} render(); updSync(); }
 function exportBackup(){
   const blob=new Blob([JSON.stringify(D,null,1)],{type:'application/json'});
@@ -1664,6 +1683,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 }
 applyBg();
 history.replaceState({v:'home'},'');
+connectFromLink();
 load();
 </script>
 </body>
