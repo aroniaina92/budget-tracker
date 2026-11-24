@@ -200,6 +200,7 @@ th{color:var(--muted);font-weight:500}
 </head>
 <body>
 <header>
+  <button id="backBtn" onclick="history.back()" aria-label="Back" style="display:none;font-size:18px;padding:4px 10px">←</button>
   <h1 id="title">Budget</h1>
   <button id="sync" onclick="go('settings');setTimeout(()=>{const e=document.getElementById('syncBox');if(e)e.scrollIntoView({block:'center'})},50)">☁</button>
   <button id="langBtn" onclick="toggleLang()">FR</button>
@@ -231,6 +232,10 @@ const TX = {
   amount:'Montant',account:'Portefeuille',date:'Date',note:'Note (facultatif)',category:'Catégorie',save:'Enregistrer',
   saved:'Enregistré',undo:'Annuler',deleted:'Supprimé',tapCat:'Touchez une catégorie pour enregistrer',
   withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',
+  savWallets:'Portefeuilles d\'épargne',savWallet:'Portefeuille d\'épargne',savPartTo:'La part épargne va dans',savFrom:'Pris dans le portefeuille d\'épargne',
+  intoWallet:'Versé dans le portefeuille',moneyFrom:'L\'argent vient de',savIn:'Mis dans le portefeuille d\'épargne',
+  savMismatch:'Objectifs {g} ≠ portefeuilles d\'épargne {w}',savFix:'Corriger',isSavAcc:'Portefeuille d\'épargne (hors total)',
+  savTrErr:'Pour mettre de l\'argent dans l\'épargne ou l\'en sortir, utilisez « Épargne » ou « Transfert d\'épargne ».',notInTotal:'non compté dans le total',
   authErr:'Code d\'accès refusé',localOnly:'Données sur cet appareil uniquement',pending:'en attente d\'envoi',synced:'Synchronisé',
   offlineMsg:'Hors ligne — vos saisies sont gardées et seront envoyées au retour de la connexion.',
   localMsg:'Données sur cet appareil uniquement. Connectez votre Google Sheet dans Réglages pour la sauvegarde et la synchro.',
@@ -275,6 +280,10 @@ const TX = {
   amount:'Amount',account:'Wallet',date:'Date',note:'Note (optional)',category:'Category',save:'Save',
   saved:'Saved',undo:'Undo',deleted:'Deleted',tapCat:'Tap a category to save',
   withdrawGoal:'Use savings',advanced:'Advanced options',
+  savWallets:'Savings wallets',savWallet:'Savings wallet',savPartTo:'Savings part goes to',savFrom:'Taken from savings wallet',
+  intoWallet:'Paid into wallet',moneyFrom:'Money comes from',savIn:'Put into savings wallet',
+  savMismatch:'Goals {g} ≠ savings wallets {w}',savFix:'Fix',isSavAcc:'Savings wallet (not in total)',
+  savTrErr:'To put money into savings or take it out, use "Saving" or "Savings transfer".',notInTotal:'not in the total',
   authErr:'Access code refused',localOnly:'Data on this device only',pending:'waiting to be sent',synced:'Synced',
   offlineMsg:'Offline — your entries are kept and will be sent when the connection is back.',
   localMsg:'Data on this device only. Connect your Google Sheet in Settings for backup and sync.',
@@ -317,9 +326,9 @@ function t(k){ return (TX[LANG] && TX[LANG][k]) || TX.fr[k] || k; }
 /* =====================================================================
    2. DEFAULT SET-UP
    ===================================================================== */
-const V = 3; // data-format version
+const V = 4; // data-format version
 const USABLE = ['urgency','health']; // savings that can be spent directly from the Expense form
-const EMO = {cash:'💵',orange:'🟠',mvola:'🟡',bank:'🏦',household:'🛒',
+const EMO = {cash:'💵',orange:'🟠',mvola:'🟡',bank:'🏦',household:'🛒',savbank:'🏛️',savcash:'💰',
   rent:'🏠',jirama:'💡',food:'🍚',fuel:'⛽',transport:'🚌',maintenance:'🔧',laundry:'🧺',internet:'🌐',netflix:'🎬',
   secretaria:'🤖',secretariaroo:'🗂️',cece:'💜',ohanna:'💛',aroo:'💙',family:'👪',godswork:'🙏',fees:'💸',
   urgency:'🚨',health:'🩺',land:'🏡',vacation:'🏖️',ohanna2028:'🎓',julyvac:'☀️',carrepair:'🚗'};
@@ -328,13 +337,14 @@ const LINES_V2 = {'c:rent':920000,'c:jirama':250000,'c:secretaria':94000,'c:secr
   'c:food':920000,'c:maintenance':100000,'c:laundry':60000,'c:transport':50000};
 
 function makeDefaults(){
-  const A=(id,fr,en,o,spend)=>({id,name_fr:fr,name_en:en,opening:0,active:true,order:o,emoji:EMO[id],spend:spend||''});
+  const A=(id,fr,en,o,spend,sav)=>({id,name_fr:fr,name_en:en,opening:0,active:true,order:o,emoji:EMO[id],spend:spend||'',savings:!!sav});
   const C=(id,fr,en,o)=>({id,name_fr:fr,name_en:en,active:true,order:o,emoji:EMO[id]});
   const G=(id,fr,en,kind,deadline,yearly,o)=>({id,name_fr:fr,name_en:en,kind,target:TARGETS_V2[id]||0,deadline,yearly,active:true,order:o,emoji:EMO[id]});
   const L=(env,a)=>({env,amount:a!=null?a:(LINES_V2[env]||0)});
   return {
     Accounts:[A('cash','Espèces','Cash',1),A('orange','Orange Money','Orange Money',2),A('mvola','MVola','MVola',3),
-              A('bank','Banque','Bank',4),A('household','Poche ménage','Household pocket',5,'food')],
+              A('bank','Banque','Bank',4),A('household','Poche ménage','Household pocket',5,'food'),
+              A('savbank','Épargne – Banque','Savings – Bank',6,'',true),A('savcash','Épargne – Espèces','Savings – Cash',7,'',true)],
     Categories:[C('rent','Loyer','House rent',1),C('jirama','JIRAMA','JIRAMA',2),C('food','Alimentation & courses','Food & groceries',3),
       C('fuel','Carburant','Fuel',4),C('transport','Transport','Transportation',5),C('maintenance','Entretien maison','Home maintenance',6),
       C('laundry','Lessive','Laundry',7),C('internet','Internet','Internet',8),C('netflix','Netflix','Netflix',9),
@@ -348,7 +358,7 @@ function makeDefaults(){
       G('julyvac','Vacances de juillet','July vacation','goal','2027-07-30',true,6),
       G('carrepair','Réparation voiture','Car repair','goal','2027-01-31',false,7)],
     Settings:{
-      version:V, startMonth: monthOf(today()),
+      version:V, startMonth: monthOf(today()), savAccount:'savbank',
       salaries:[
         {id:'s1',name_fr:'Salaire 1',name_en:'Salary 1',amount:1500000,account:'bank',lines:[
           L('c:rent'),L('c:jirama'),L('c:secretaria'),L('c:secretariaroo'),L('c:netflix'),L('c:fuel'),L('c:godswork',62000)]},
@@ -373,6 +383,11 @@ function migrate(){
       if(g.id==='vacation'){ g.name_fr='Vacances de janvier'; g.name_en='January vacation'; } });
     (S.salaries||[]).forEach(s=>(s.lines||[]).forEach(l=>{ if(LINES_V2[l.env]!=null) l.amount=LINES_V2[l.env]; }));
     S.irregular=Object.assign({threshold:200000,savingsPct:70,personal:['aroo','ohanna','cece'],account:'bank'},S.irregular||{},{remainderGoal:'land'});
+  }
+  if(ver<4){
+    const add=(id,fr,en,o)=>{ if(!D.accounts.some(a=>a.id===id)) D.accounts.push({id,name_fr:fr,name_en:en,opening:0,active:true,order:o,emoji:EMO[id],spend:'',savings:true}); };
+    add('savbank','Épargne – Banque','Savings – Bank',6); add('savcash','Épargne – Espèces','Savings – Cash',7);
+    S.savAccount=S.savAccount||'savbank'; call('apiSetSetting','savAccount',S.savAccount);
   }
   if(ver<3){
     D.goals.forEach(g=>{ if(g.id==='urgency'||g.id==='health'){ g.kind='goal'; g.target=TARGETS_V2[g.id]; g.deadline=''; } });
@@ -487,7 +502,11 @@ function nm(o){ if(!o) return '?'; return LANG==='en' ? (o.name_en||o.name_fr) :
 function em(o){ return (o&&o.emoji)||''; }
 function byOrder(a,b){ return (+a.order||0)-(+b.order||0); }
 function acts(list){ return list.filter(x=>isTrue(x.active)).sort(byOrder); }
-function wallets(){ return acts(D.accounts).filter(a=>!a.spend); }      // real wallets (hold money)
+function wallets(){ return acts(D.accounts).filter(a=>!a.spend&&!isTrue(a.savings)); }   // everyday wallets
+function savWallets(){ return acts(D.accounts).filter(a=>isTrue(a.savings)); }          // where savings are physically kept
+function isSav(id){ const a=D.accounts.find(x=>x.id===id); return !!a&&isTrue(a.savings); }
+function defSav(){ const s=D.settings.savAccount; return savWallets().some(a=>a.id===s)?s:((savWallets()[0]||{}).id||''); }
+function savPick(id,sel,label){ const L=savWallets(); if(!L.length) return ''; return `<div class="lbl">${label||t('savWallet')}</div>`+walletPick(id,sel||defSav(),L); }
 function accName(id){ const a=D.accounts.find(x=>x.id===id); return a?(em(a)+' '+nm(a)).trim():'?'; }
 function envObj(e){ if(!e) return null; const [k,id]=e.split(':'); return (k==='c'?D.categories:D.goals).find(x=>x.id===id); }
 function envName(e){ if(!e) return t('toAssign'); const o=envObj(e); return o?(em(o)+' '+nm(o)).trim():'?'; }
@@ -657,7 +676,17 @@ function row(o){ return Object.assign({id:uid(),date:today(),type:'',amount:0,ac
 /* =====================================================================
    6. SCREENS
    ===================================================================== */
-function go(v){ VIEW=v; render(); window.scrollTo(0,0); }
+/* Back navigation (phone back button and ← in the header):
+   closes an open form first, then returns page by page to Home; Back on Home leaves the app. */
+function go(v,fromPop){
+  if(!fromPop&&v!==VIEW) history.pushState({v},'');
+  VIEW=v; render(); window.scrollTo(0,0);
+}
+window.addEventListener('popstate',e=>{
+  if($('ov').classList.contains('open')){ closeSheet(true); }
+  const v=(e.state&&e.state.v)||'home';
+  if(v!==VIEW) go(v,true);
+});
 function render(){
   if(!D) return;
   document.documentElement.lang=LANG;
@@ -665,6 +694,7 @@ function render(){
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
   document.querySelectorAll('nav [data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===VIEW));
   document.getElementById('title').textContent=t(VIEW);
+  document.getElementById('backBtn').style.display=VIEW==='home'?'none':'';
   setView(({home:vHome,goals:vGoals,reports:vReports,history:vHistory,settings:vSettings}[VIEW]||vHome)());
 }
 function toggleLang(){ LANG=LANG==='fr'?'en':'fr'; lsSet('bt_lang',LANG); render(); }
@@ -708,6 +738,14 @@ function vHome(){
     <div class="big">${fmt(totW)}</div><div class="sub">${t('heroSub').replace('{b}',fmt(totBud)).replace('{g}',fmt(totSav))}</div></div>`+h;
   h+=`<h2 class="sec s-acc">${t('accounts')}<span class="tot">${fmt(totW)}</span></h2><div class="tiles">`+
     W.map(a=>`<div class="tile acc s-acc"><span class="e">${esc(em(a))}</span><span class="n">${esc(nm(a))}</span><span class="v ${B.acc[a.id]<0?'neg':''}">${fmt(B.acc[a.id])}</span></div>`).join('')+`</div>`;
+  const SW=savWallets();
+  if(SW.length){
+    const totS=SW.reduce((s,a)=>s+(B.acc[a.id]||0),0), totG=acts(D.goals).reduce((s,g)=>s+(B.env['g:'+g.id]||0),0);
+    h+=`<h2 class="sec s-goal">${t('savWallets')}<span class="tot">${fmt(totS)} <span class="muted" style="font-weight:400">· ${t('notInTotal')}</span></span></h2><div class="tiles">`+
+      SW.map(a=>`<div class="tile acc s-goal"><span class="e">${esc(em(a))}</span><span class="n">${esc(nm(a))}</span><span class="v ${B.acc[a.id]<0?'neg':''}">${fmt(B.acc[a.id])}</span></div>`).join('')+`</div>`;
+    if(Math.round(totS-totG)!==0) h+=`<div class="card" style="margin-top:8px;border-left:4px solid var(--over)"><div class="row"><div class="grow muted">⚠️ ${t('savMismatch').replace('{g}',fmt(totG)).replace('{w}',fmt(totS))}</div>
+      ${totG>totS?`<button class="btn sm" onclick="openTransfer('${defSav()}',${Math.round(totG-totS)})">${t('savFix')}</button>`:''}</div></div>`;
+  }
   if(Math.round(B.pool)!==0){
     h+=`<div class="card" style="margin-top:12px"><div class="row"><div class="grow"><b>📥 ${t('toAssign')}</b></div><span class="amt ${B.pool<0?'neg':''}">${fmt(B.pool)}</span></div>
     ${B.pool>0?`<div class="row" style="margin-top:8px"><button class="btn sm" onclick="openSaving('')">${t('toGoals')}</button><button class="btn sm sec" onclick="openMove('')">${t('toCat')}</button></div>`:''}</div>`;
@@ -791,19 +829,21 @@ function groupInfo(rs){
   const r=rs[0], tot=rs.reduce((s,x)=>s+x.amount,0);
   const arrow=x=>`${envName(x.env)} → ${envName(x.env2)} ${fmt(x.amount)}`;
   if(r.ref&&r.ref.startsWith('sal-')){ const s=(D.settings.salaries||[]).find(x=>x.id===r.ref.split('-')[1]);
-    return {k:'k-inc',label:'💼 '+(s?nm(s):t('salary')),amt:tot,cls:'pos',lines:rs.map(x=>envName(x.env)+' '+fmt(x.amount)),acc:accName(r.acc)}; }
+    const inc=rs.filter(x=>x.type==='income');
+    return {k:'k-inc',label:'💼 '+(s?nm(s):t('salary')),amt:inc.reduce((a,x)=>a+x.amount,0),cls:'pos',lines:inc.map(x=>envName(x.env)+' '+fmt(x.amount)+(x.acc!==r.acc?' ('+accName(x.acc)+')':'')),acc:accName(r.acc)}; }
   if(r.ref&&r.ref.startsWith('roll-')) return {k:'k-mv',label:'🔁 '+t('rollover'),amt:tot,lines:rs.map(arrow)};
-  const tr=rs.find(x=>x.type==='transfer');
-  if(tr){ const fe=rs.find(x=>x.type==='expense');
+  const tr=rs.find(x=>x.type==='transfer'), trLines=rs.filter(x=>x.type==='transfer').map(x=>`${accName(x.acc)} → ${accName(x.acc2)} ${fmt(x.amount)}`);
+  if(tr&&!rs.some(x=>x.type==='move'||x.type==='income')){ const fe=rs.find(x=>x.type==='expense');
     return {k:'k-tr',label:'⇄ '+accName(tr.acc)+' → '+accName(tr.acc2),amt:tr.amount,lines:fe?[t('fees')+' '+fmt(fe.amount)+' ('+envName(fe.env)+')']:[]}; }
   if(r.type==='expense'){ const sav=rs.every(x=>String(x.env).startsWith('g:'));
     return {k:sav?'k-sav':'k-exp',label:rs.map(x=>envName(x.env)).join(', '),amt:-tot,cls:'neg',lines:rs.length>1?rs.map(x=>envName(x.env)+' '+fmt(x.amount)):[],acc:accName(r.acc)}; }
-  if(r.type==='income') return {k:'k-inc',label:'💰 '+t('irregular'),amt:tot,cls:'pos',lines:rs.map(x=>envName(x.env)+' '+fmt(x.amount)),acc:accName(r.acc)};
+  if(r.type==='income') return {k:'k-inc',label:'💰 '+t('irregular'),amt:tot,cls:'pos',lines:rs.map(x=>envName(x.env)+' '+fmt(x.amount)+(x.acc!==r.acc?' ('+accName(x.acc)+')':'')),acc:accName(r.acc)};
   // moves: savings transfer / reassign / saving
+  const mv=rs.filter(x=>x.type==='move'); rs=mv.length?mv:rs;
   const srcs=[...new Set(rs.map(x=>x.env))];
   const fromSav=srcs.every(x=>String(x).startsWith('g:')), toSav=rs.every(x=>String(x.env2).startsWith('g:'));
   const label=(fromSav?'🔀 '+t('savTransfer'):toSav?'🎯 '+t('saving'):'↪ '+t('move'));
-  return {k:'k-mv',label,amt:tot,lines:rs.map(arrow)};
+  return {k:'k-mv',label,amt:rs.reduce((a,x)=>a+x.amount,0),lines:rs.map(arrow).concat(trLines.map(x=>'💳 '+x))};
 }
 let HEND=null;
 function vHistory(){
@@ -841,8 +881,12 @@ function askDelete(btn,g){ if(btn.dataset.sure){ deleteGroup(g); return; } btn.d
    7. INPUT HELPERS: calculator, wallet picker
    ===================================================================== */
 function $(id){ return document.getElementById(id); }
-function sheet(title,body){ $('sheet').innerHTML=`<div class="top"><h3>${title}</h3><button class="btn ghost" onclick="closeSheet()">✕</button></div>${body}<div class="sheetEnd"></div>`; $('ov').classList.add('open'); $('sheet').scrollTop=0; }
-function closeSheet(){ $('ov').classList.remove('open'); }
+function sheet(title,body){ if(!$('ov').classList.contains('open')) history.pushState({v:VIEW,sheet:1},''); $('sheet').innerHTML=`<div class="top"><h3>${title}</h3><button class="btn ghost" onclick="closeSheet()">✕</button></div>${body}<div class="sheetEnd"></div>`; $('ov').classList.add('open'); $('sheet').scrollTop=0; }
+function closeSheet(fromPop){
+  if(!$('ov').classList.contains('open')) return;
+  $('ov').classList.remove('open');
+  if(!fromPop&&history.state&&history.state.sheet) history.back();
+}
 
 /* --- Calculator (one per form) --- */
 let CALC={expr:'',on:null};
@@ -903,6 +947,7 @@ function pickVal(id){ const b=document.querySelector(`[data-pick="${id}"] button
 
 function envOptions(sel,opts={}){
   let o='';
+  if(opts.catsOnly) return (opts.pool?`<option value="" ${sel===''?'selected':''}>📥 ${t('toAssign')}</option>`:'')+acts(D.categories).map(c=>`<option value="c:${c.id}" ${sel==='c:'+c.id?'selected':''}>${esc(em(c)+' '+nm(c))}</option>`).join('');
   if(opts.pool) o+=`<option value="" ${sel===''?'selected':''}>📥 ${t('toAssign')}</option>`;
   o+=`<optgroup label="${t('budgets')}">`+acts(D.categories).map(c=>`<option value="c:${c.id}" ${sel==='c:'+c.id?'selected':''}>${esc(em(c)+' '+nm(c))}</option>`).join('')+`</optgroup>`;
   o+=`<optgroup label="${t('goals')}">`+acts(D.goals).map(g=>`<option value="g:${g.id}" ${sel==='g:'+g.id?'selected':''}>${esc(em(g)+' '+nm(g))}</option>`).join('')+`</optgroup>`;
@@ -925,7 +970,8 @@ function openAdd(){
 /* ----- Expense: type the amount on the keypad, tap a category = saved ----- */
 function openExpense(presetEnv){
   const B=balances();
-  let body=calcHtml(0)+walletPick('eAcc',lastAcc)+
+  const goalPreset=presetEnv&&presetEnv.startsWith('g:');
+  let body=calcHtml(0)+(goalPreset?savPick('eSav',defSav(),t('savFrom')):walletPick('eAcc',lastAcc))+
     `<div class="two"><div class="f"><input id="eDate" type="date" value="${today()}"></div><div class="f"><input id="eNote" placeholder="${t('note')}"></div></div><div id="eErr" class="err"></div>`;
   if(presetEnv){
     body+=`<div class="muted" style="margin:0 2px 8px">${esc(envName(presetEnv))} · ${fmt(B.env[presetEnv]||0)}</div><button class="btn block" onclick="saveExpense('${presetEnv}')">${t('save')}</button>`;
@@ -935,14 +981,16 @@ function openExpense(presetEnv){
       <div class="cats-h s-bud">${t('budgets')}</div><div class="cats s-bud">${acts(D.categories).map(c=>btn('c:'+c.id,c)).join('')}</div>`;
     const res=acts(D.goals).filter(g=>g.kind==='reserve'), gs=acts(D.goals).filter(g=>g.kind!=='reserve'&&USABLE.includes(g.id));
     if(res.length) body+=`<div class="cats-h s-res">${t('reserves')}</div><div class="cats s-res">${res.map(g=>btn('g:'+g.id,g)).join('')}</div>`;
-    if(gs.length) body+=`<div class="cats-h s-goal">${t('withdrawGoal')}</div><div class="cats s-goal">${gs.map(g=>btn('g:'+g.id,g)).join('')}</div>`;
+    if(gs.length) body+=`<div class="cats-h s-goal">${t('withdrawGoal')}</div>${savPick('eSav',defSav(),t('savFrom'))}<div class="cats s-goal">${gs.map(g=>btn('g:'+g.id,g)).join('')}</div>`;
   }
   sheet(presetEnv?esc(envName(presetEnv)):t('expense'),body+keypadHtml());
 }
 function saveExpense(env){
   const a=calcVal();
   if(!a){ $('eErr').textContent=t('amount')+' ?'; $('sheet').scrollTop=0; return; }
-  const acc=pickVal('eAcc'); lastAcc=acc; lsSet('bt_lastAcc',acc);
+  let acc;
+  if(env.startsWith('g:')&&pickVal('eSav')) acc=pickVal('eSav');
+  else { acc=pickVal('eAcc')||lastAcc; lastAcc=acc; lsSet('bt_lastAcc',acc); }
   commit([row({type:'expense',amount:a,acc,env,date:$('eDate').value||today(),grp:uid(),note:$('eNote').value})]);
 }
 
@@ -955,7 +1003,7 @@ function openSalaryPick(){
 }
 function openSalary(id){
   const s=(D.settings.salaries||[]).find(x=>x.id===id), m=monthOf(today());
-  W={s,amount:num(s.amount),acc:s.account||'bank',date:today(),month:m,lines:(s.lines||[]).map(l=>({env:l.env,amount:num(l.amount)})),
+  W={s,amount:num(s.amount),acc:s.account||'bank',sav:defSav(),date:today(),month:m,lines:(s.lines||[]).map(l=>({env:l.env,amount:num(l.amount)})),
      left:[],leftMode:'keep',leftEnv:'g:land',i:0};
   // First salary of the month: offer to reallocate what is left in the budgets
   const first=!D.ledger.some(r=>r.ref&&r.ref.startsWith('sal-')&&r.ref.endsWith('-'+m));
@@ -985,6 +1033,7 @@ function wizRender(){
   const st=W.seq[W.i], n=W.lines.length; let body='';
   if(st==='head'){
     body=calcHtml(W.amount,t('received'))+walletPick('wAcc',W.acc)+
+      ((W.lines.some(l=>l.env.startsWith('g:'))||W.left.length)?savPick('wSav',W.sav,t('savPartTo')):'')+
       `<div class="two"><div class="f"><label>${t('forMonth')}</label><input id="wMonth" type="month" value="${W.month}"></div>
       <div class="f"><label>${t('date')}</label><input id="wDate" type="date" value="${W.date}"></div></div>
       <button class="btn block" onclick="wizNext()">${t('next')}</button>`+keypadHtml();
@@ -1015,7 +1064,7 @@ function wizRender(){
 }
 function wizStore(){
   const st=W.seq[W.i];
-  if(st==='head'){ W.amount=calcVal(); W.acc=pickVal('wAcc')||W.acc; W.month=$('wMonth').value||W.month; W.date=$('wDate').value||W.date; }
+  if(st==='head'){ W.amount=calcVal(); W.acc=pickVal('wAcc')||W.acc; W.sav=pickVal('wSav')||W.sav; W.month=$('wMonth').value||W.month; W.date=$('wDate').value||W.date; }
   else if(typeof st==='number'){ W.lines[st].amount=calcVal(); }
 }
 function wizNext(){ wizStore(); if(W.seq[W.i]==='head'&&!W.amount) return; W.i=Math.min(W.seq.length-1,W.i+1); wizRender(); }
@@ -1024,7 +1073,8 @@ function wizSave(){
   const ref='sal-'+W.s.id+'-'+W.month;
   if(D.ledger.some(r=>r.ref===ref)){ toast(t('dup')); return; }
   const grp=uid();
-  const rows=W.lines.filter(l=>l.amount>0).map(l=>row({type:'income',amount:l.amount,acc:W.acc,env:l.env,date:W.date,grp,ref,note:nm(W.s)}));
+  const accFor=env=>env.startsWith('g:')&&W.sav?W.sav:W.acc;   // savings go straight into the savings wallet
+  const rows=W.lines.filter(l=>l.amount>0).map(l=>row({type:'income',amount:l.amount,acc:accFor(l.env),env:l.env,date:W.date,grp,ref,note:nm(W.s)}));
   const rest=W.amount-W.lines.reduce((s,x)=>s+x.amount,0);
   if(rest>0) rows.push(row({type:'income',amount:rest,acc:W.acc,env:'',date:W.date,grp,ref,note:nm(W.s)}));
   // leftover of last month's budgets (moved before the new money arrives)
@@ -1032,7 +1082,10 @@ function wizSave(){
   if(src.length&&W.leftMode!=='keep'){
     const tot=src.reduce((s,x)=>s+x.amount,0);
     const dst=W.leftMode==='goals'?equalGoals(tot,W.date):[{env:W.leftMode==='one'?W.leftEnv:'',amount:tot}];
-    rows.push(...pairMoves(src,dst,{date:W.date,grp:uid(),note:t('leftNote')}));
+    const lg=uid();
+    rows.push(...pairMoves(src,dst,{date:W.date,grp:lg,note:t('leftNote')}));
+    const toGoals=dst.filter(d=>d.env.startsWith('g:')).reduce((s,d)=>s+d.amount,0);
+    if(toGoals>0&&W.sav) rows.push(row({type:'transfer',amount:toGoals,acc:W.acc,acc2:W.sav,date:W.date,grp:lg,note:t('leftNote')}));
   }
   commit(rows);
 }
@@ -1071,6 +1124,7 @@ function openIrregular(){
   const R=D.settings.irregular||{};
   sheet('💰 '+t('irregular'),calcHtml(0)+walletPick('iAcc',R.account||'bank')+
     `<div class="two"><div class="f"><input id="iDate" type="date" value="${today()}"></div><div class="f"><input id="iNote" placeholder="${t('note')}"></div></div>
+    ${savPick('iSav',defSav(),t('savPartTo'))}
     <div class="lbl">${t('destination')}</div>
     <div class="pick" data-pick="iMode"><button type="button" class="on" data-v="auto" onclick="pickOne(this);irMode()">🎯 ${t('destAuto')}</button><button type="button" data-v="one" onclick="pickOne(this);irMode()">📌 ${t('destOne')}</button></div>
     <div id="iAutoTxt" class="muted" style="margin:0 2px 8px">${esc(irregText())}</div>
@@ -1086,8 +1140,8 @@ function irregPreview(){
 }
 function irregSave(){
   const rest=P.total-P.lines.reduce((s,l)=>s+l.amount,0); if(rest<0) return;
-  const grp=uid(), acc=pickVal('iAcc'), date=$('iDate').value||today(), note=$('iNote').value;
-  const rows=P.lines.filter(l=>l.amount>0).map(l=>row({type:'income',amount:l.amount,acc,env:l.env,date,grp,note}));
+  const grp=uid(), acc=pickVal('iAcc'), sav=pickVal('iSav'), date=$('iDate').value||today(), note=$('iNote').value;
+  const rows=P.lines.filter(l=>l.amount>0).map(l=>row({type:'income',amount:l.amount,acc:l.env.startsWith('g:')&&sav?sav:acc,env:l.env,date,grp,note}));
   if(rest>0) rows.push(row({type:'income',amount:rest,acc,env:'',date,grp,note}));
   commit(rows);
 }
@@ -1097,6 +1151,8 @@ function openSaving(src){
   const B=balances();
   sheet('🎯 '+t('saving'),`<div class="f"><label>${t('source')}</label><select id="sSrc">${envOptions(src,{pool:true})}</select></div>`+
     calcHtml(src===''&&B.pool>0?B.pool:0)+
+    `<div class="lbl">${t('moneyFrom')}</div>${walletPick('sFrom',(D.settings.irregular||{}).account||'bank',wallets().concat(savWallets()))}`+
+    savPick('sTo',defSav(),t('savIn'))+
     `<div class="f"><input id="sDate" type="date" value="${today()}"></div>
     <button class="btn block" id="pvGo" onclick="savPreview()">${t('preview')}</button>
     <div id="pvWrap" style="margin-top:10px"></div><div id="pvBtn"></div>`+keypadHtml());
@@ -1111,6 +1167,8 @@ function savSave(){
   if(P.lines.reduce((s,l)=>s+l.amount,0)>P.total) return;
   const grp=uid(), src=$('sSrc').value, date=$('sDate').value||today();
   const rows=P.lines.filter(l=>l.amount>0&&l.env!==src).map(l=>row({type:'move',amount:l.amount,env:src,env2:l.env,date,grp}));
+  const from=pickVal('sFrom'), to=pickVal('sTo'), moved=rows.filter(r=>r.env2.startsWith('g:')).reduce((s,r)=>s+r.amount,0);
+  if(moved>0&&from&&to&&from!==to&&!isSav(from)) rows.push(row({type:'transfer',amount:moved,acc:from,acc2:to,date,grp}));
   if(rows.length) commit(rows);
 }
 
@@ -1119,16 +1177,29 @@ function openSavTransfer(src){
   const B=balances(), gs=acts(D.goals), first=src?D.goals.find(g=>'g:'+g.id===src):(gs.find(g=>(B.env['g:'+g.id]||0)>0)||gs[0]);
   const gOpts=(sel)=>gs.map(g=>`<option value="g:${g.id}" ${sel==='g:'+g.id?'selected':''}>${esc(em(g)+' '+nm(g))} · ${fmtK(B.env['g:'+g.id]||0)}</option>`).join('');
   sheet('🔀 '+t('savTransfer'),`<div class="two"><div class="f"><label>${t('from')}</label><select id="mSrc">${gOpts(first?'g:'+first.id:'')}</select></div>
-    <div class="f"><label>${t('to')}</label><select id="mDst">${envOptions('c:food')}</select></div></div>`+
-    calcHtml(0)+`<div class="f"><input id="mDate" type="date" value="${today()}"></div>
-    <button class="btn block" onclick="moveSave()">${t('save')}</button>`+keypadHtml());
+    <div class="f"><label>${t('to')}</label><select id="mDst" onchange="stDst()">${envOptions('c:food')}</select></div></div>`+
+    calcHtml(0)+savPick('mFromAcc',defSav(),t('savFrom'))+
+    `<div id="mToBud"><div class="lbl">${t('intoWallet')}</div>${walletPick('mToAcc','cash')}</div>
+    <div id="mToSav" style="display:none">${savPick('mToSav',defSav(),t('savIn'))}</div>
+    <div class="f"><input id="mDate" type="date" value="${today()}"></div>
+    <button class="btn block" onclick="savTrSave()">${t('save')}</button>`+keypadHtml());
+  stDst();
+}
+function stDst(){ const g=$('mDst').value.startsWith('g:'); $('mToBud').style.display=g?'none':''; $('mToSav').style.display=g?'':'none'; }
+function savTrSave(){
+  const a=calcVal(), s=$('mSrc').value, d=$('mDst').value; if(!a||s===d) return;
+  const grp=uid(), date=$('mDate').value||today(), from=pickVal('mFromAcc'), to=d.startsWith('g:')?pickVal('mToSav'):pickVal('mToAcc');
+  const rows=[row({type:'move',amount:a,env:s,env2:d,date,grp})];
+  if(from&&to&&from!==to) rows.push(row({type:'transfer',amount:a,acc:from,acc2:to,date,grp}));
+  commit(rows);
 }
 
 /* ----- Reassign between budgets/goals ----- */
 function openMove(src){
   const B=balances(), avail=src===''?B.pool:(B.env[src]||0);
-  sheet('↪ '+t('move'),`<div class="two"><div class="f"><label>${t('from')}</label><select id="mSrc">${envOptions(src,{pool:true})}</select></div>
-    <div class="f"><label>${t('to')}</label><select id="mDst">${envOptions(src===''?'c:food':'',{pool:true})}</select></div></div>`+
+  if(src&&src.startsWith('g:')) return openSavTransfer(src);
+  sheet('↪ '+t('move'),`<div class="two"><div class="f"><label>${t('from')}</label><select id="mSrc">${envOptions(src,{pool:true,catsOnly:true})}</select></div>
+    <div class="f"><label>${t('to')}</label><select id="mDst">${envOptions(src===''?'c:food':'',{pool:true,catsOnly:true})}</select></div></div>`+
     calcHtml(avail>0?avail:0)+`<div class="f"><input id="mDate" type="date" value="${today()}"></div>
     <button class="btn block" onclick="moveSave()">${t('save')}</button>`+keypadHtml());
 }
@@ -1139,20 +1210,22 @@ function moveSave(){
 }
 
 /* ----- Transfer between wallets (fee optional). To the household pocket = Food & groceries spent. ----- */
-function openTransfer(){
-  const from=wallets().some(a=>a.id===lastAcc)?lastAcc:'cash';
-  sheet('⇄ '+t('transfer'),calcHtml(0)+
-    `<div class="lbl">${t('from')}</div>${walletPick('tFrom',from)}
-    <div class="lbl">${t('to')}</div>${walletPick('tTo','household',acts(D.accounts))}
+function openTransfer(to,amount){
+  const from=wallets().some(a=>a.id===lastAcc)?lastAcc:'bank';
+  sheet('⇄ '+t('transfer'),calcHtml(amount||0)+
+    `<div class="lbl">${t('from')}</div>${walletPick('tFrom',to&&isSav(to)?'bank':from,wallets().concat(savWallets()))}
+    <div class="lbl">${t('to')}</div>${walletPick('tTo',to||'household',acts(D.accounts))}
     <label class="check"><input type="checkbox" id="tFee" onchange="$('feeBox').style.display=this.checked?'grid':'none'"> ${t('fee')}</label>
     <div id="feeBox" class="two" style="display:none"><div class="f"><label>${t('feeAmount')}</label><input id="tFeeAmt" inputmode="numeric" oninput="this.value=fmtIn(num(this.value))"></div>
       <div class="f"><label>${t('feeEnv')}</label><select id="tFeeEnv">${envOptions('c:fees',{pool:true})}</select></div></div>
     <div class="two"><div class="f"><input id="tDate" type="date" value="${today()}"></div><div class="f"><input id="tNote" placeholder="${t('note')}"></div></div>
     <div id="tErr" class="err"></div><button class="btn block" onclick="transferSave()">${t('save')}</button>`+keypadHtml());
+  $('sheet').dataset.fix=to&&isSav(to)?'1':'0';   // "Fix" button on Home: allowed to move money into a savings wallet
 }
 function transferSave(){
   const a=calcVal(), f=pickVal('tFrom'), to=pickVal('tTo');
   if(!a||f===to){ $('tErr').textContent=!a?t('amount')+' ?':t('pickErr'); return; }
+  if(isSav(f)!==isSav(to)&&$('sheet').dataset.fix!=='1'){ $('tErr').textContent=t('savTrErr'); return; }
   const grp=uid(), date=$('tDate').value||today(), note=$('tNote').value;
   const dest=D.accounts.find(x=>x.id===to);
   const rows=[];
@@ -1223,6 +1296,7 @@ function edRow(table,o){
   }
   if(table==='Accounts'){
     x+=`<div class="full"><label class="muted">${t('opening')}</label><input data-k="opening" inputmode="numeric" value="${fmtIn(o.opening)}" oninput="this.value=fmtIn(num(this.value))"></div>
+      <label class="ck full"><input type="checkbox" data-k="savings" ${isTrue(o.savings)?'checked':''}> ${t('isSavAcc')}</label>
       <div class="full"><label class="muted">${t('spendAcc')}</label><select data-k="spend"><option value="">${t('none')}</option>${acts(D.categories).map(c=>`<option value="${c.id}" ${o.spend===c.id?'selected':''}>${esc(em(c)+' '+nm(c))}</option>`).join('')}</select></div>`;
   }
   x+=`<label class="ck w2"><input type="checkbox" data-k="active" ${isTrue(o.active)?'checked':''}> ${t('active')}</label>
@@ -1240,7 +1314,7 @@ function addItem(table){
   const list=D[table.toLowerCase()];
   const o={id:'x'+uid(),name_fr:'',name_en:'',active:true,order:list.length+1,emoji:''};
   if(table==='Goals') Object.assign(o,{kind:'goal',target:0,deadline:'',yearly:false});
-  if(table==='Accounts') Object.assign(o,{opening:0,spend:''});
+  if(table==='Accounts') Object.assign(o,{opening:0,spend:'',savings:false});
   list.push(o); render();
   setTimeout(()=>{ const el=document.querySelector(`.ed[data-id="${o.id}"] input[data-k="name_fr"]`); if(el){ el.scrollIntoView({block:'center'}); el.focus(); } },50);
 }
@@ -1316,6 +1390,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
 applyBg();
+history.replaceState({v:'home'},'');
 load();
 </script>
 </body>
