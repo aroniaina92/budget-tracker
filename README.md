@@ -64,19 +64,20 @@ A plain *Transfer* between an everyday wallet and a savings wallet is refused (u
   Wallet blocks show your personal part and, below, the funds' parts (e.g. "+ 🎶 250 k · 🧭 1 M").
 - **ZA SpaFi**: no categories — money in, money out (with a note), transfers between wallets.
 - **Field work**: categories V1, V2, V3, Field fuel, Community participation, Equipment, Internet, Per diem, Team salary, Transportation,
-  each with a progress bar. Money received is split across them with the planned amounts (Settings › Field work › *Planned split*); the rest stays *Not allocated*.
+  each with a progress bar. Their budgets are the amounts in Settings › Field work › *Mission budget per category*; remaining = budget − spent since the mission started.
+  **Start new mission** (Field work block on Home) resets every category to its mission budget. Money received just goes into the wallet where it arrived.
 - Same rule as your personal budgets: money received is recorded in the wallet where it arrived (you tap it, no default); Field work budgets are not tied to a wallet,
   and an expense can be paid from any Field work wallet — it is taken from the total Field work money. The fund block warns when its budgets are more than its money,
   and notes a wallet below 0 (unrecorded withdrawal/transfer).
 - Home shows one coloured block per fund (total, where the money is, Income / Expense / Transfer buttons). Reports can be filtered by fund.
 
 **Wallets.** Tap any wallet block to see its **history** and **adjust its balance** (type the real amount):
-- everyday wallet → the difference goes to/from *To assign*;
+- everyday wallet → the wallet simply shows the new amount (nothing to assign);
 - savings wallet → an added amount is shared between goals (equal parts by default, *By need* on request); a removed amount is taken in equal parts from each goal that holds money;
 - for a shared wallet, choose whose money is adjusted (Personal / ZA SpaFi / Field work).
 Savings wallets are shown on the **Goals** page. Their amount is set with *Adjust balance*, so it goes straight into the goals; if they hold money not yet in a goal, the Goals page shows *Share into goals*.
 
-**Saving** (from *To assign* into goals): equal parts by default (remainder to Land), with a *By need* option. The default can be changed in Settings.
+**Saving** (from wallet money into goals): equal parts by default (remainder to Land), with a *By need* option. The default can be changed in Settings.
 
 **Settings**: coloured sections; wallets, categories and goals are blocks. *Delete* is offered only for items never used; used items can be *Hidden* (they stay in past entries).
 The *Savings wallet* box and *Belongs to* (fund) choice appear only on new wallets.
@@ -87,7 +88,7 @@ The *Savings wallet* box and *Belongs to* (fund) choice appear only on new walle
 Any expense can be paid from any wallet. If budgets add up to more than the money in your everyday wallets (savings excluded), Home shows a warning.
 A wallet below 0 just means a withdrawal or transfer was not recorded (e.g. Bank → Cash): record the transfer or adjust the wallet; budgets are not affected.
 
-**Budgets and goals are envelopes.** Money that comes in is put in envelopes; expenses take money out. **To assign** = money in your wallets not yet in an envelope.
+**Budgets are a plan, wallets are the real money.** Each budget is the amount set for the month; remaining = budget − spent since the last salary. Goals hold the money that is in the savings wallets.
 
 Default salary splits — Salary 1: rent 920 000, JIRAMA 250 000, SecretarIA 94 000, SecretarIAroo 94 000, Netflix 20 000, fuel 60 000, God's work 62 000 ·
 Salary 2: food 920 000, home maintenance 100 000, laundry 60 000, transport 50 000, God's work 394 000, Land 380 000, Health 190 000, Urgency 190 000.
@@ -96,13 +97,13 @@ Everything can be changed in ⚙ Settings.
 
 | Entry | Effect |
 |---|---|
-| **Salary 1 / 2** | Each month the home screen asks whether it is available. *Yes* → amount and wallet → **for the first salary of the month: Leftover budget** (what is left in each budget, tick the ones to move: keep / share equally between savings goals / one budget or goal / To assign) → each line confirmed one by one with its default amount → summary. A salary cannot be recorded twice for the same month. |
+| **Salary 1 / 2** | Each month the home screen asks whether it is available. *Yes* → amount and the wallet where it arrived → **for the first salary of the month: Leftover budget**: what is left of last month's budgets; ticked ones are either added to the same budget this month (e.g. Fuel 60 000 + 15 000 left = 75 000), put into savings (equal parts or by need, taken from a wallet you choose and moved to the savings wallet) or moved to another budget; unticked ones restart from 0 (the money stays in your wallets) → each budget line confirmed one by one with its default amount → summary. This starts the new budget month. A salary cannot be recorded twice for the same month. |
 | **Additional income** | *Default split*: ≤ 200 000 Ar shared equally between the goals not yet reached; above, 70 % shared equally between goals and 30 % equally between Aroo, Ohanna and Cece personal use; rounding remainders to Land. Or *Into one budget / goal*. |
-| **Saving** | From *To assign* (or a budget) into goals, by need: (target − saved) ÷ months left. |
+| **Saving** | From wallet money (or a budget) into goals: equal parts by default, or by need. |
 | **Expense** | Keypad (12 000 + 3 000 works), tap a category = saved. 🚨 Urgency and 🩺 Health can be spent directly. Tapping a budget block on Home opens an expense for it. |
 | **Transfer** | Between wallets, optional fee (recorded as an expense). To **🛒 Household pocket** = counted directly as *Food & groceries* spent. |
 | **Savings transfer** (advanced) | Goal → goal or goal → budget. |
-| **Reassign** (advanced) | Between budgets, or from *To assign*. |
+| **Reassign** (advanced) | Move budget from one category to another (or add budget from wallet money). |
 
 A reached goal keeps its money and gets nothing new; a goal whose deadline has passed stops receiving. July vacation is yearly.
 

@@ -248,18 +248,20 @@ th{color:var(--muted);font-weight:500}
    ===================================================================== */
 const TX = {
  fr:{home:'Accueil',goals:'Objectifs',reports:'Rapports',history:'Journal',settings:'Réglages',
-  accounts:'Portefeuilles',total:'Total',budgets:'Budgets',reserves:'Épargne de précaution',toAssign:'À répartir',
+  accounts:'Portefeuilles',total:'Total',budgets:'Budgets',reserves:'Épargne de précaution',toAssign:'Argent des portefeuilles',
   salaryAvail:'Ce salaire est-il disponible ?',yes:'Oui',notYet:'Pas encore',
   expense:'Dépense',irregular:'Revenu additionnel',salary:'Salaire',saving:'Épargne',transfer:'Transfert',move:'Réaffecter',
   expenseSub:'Montant → catégorie',irregularSub:'Réparti automatiquement ou dans un budget',salarySub:'Répartition pas à pas',savingSub:'Vers les objectifs',
   transferSub:'Entre portefeuilles (+ frais)',moveSub:'D\'un budget à un autre',
   amount:'Montant',account:'Portefeuille',date:'Date',note:'Note (facultatif)',category:'Catégorie',save:'Enregistrer',
   saved:'Enregistré',undo:'Annuler',deleted:'Supprimé',tapCat:'Touchez une catégorie pour enregistrer',
-  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',pickWallet2:'Choisissez le portefeuille utilisé',storedIn:'Argent reçu dans (pour savoir où il est)',pickWallet:'Choisissez le portefeuille où l\'argent est arrivé',
+  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',sinceDate:'Depuis le {d} (dernier salaire)',missionSince:'Mission depuis le {d}',startMission:'Nouvelle mission',
+  sureMission:'Remettre les budgets ?',newMission:'Nouvelle mission',resetNote:'Remise à zéro',
+  leftUnchecked:'Les budgets non cochés repartent de 0 (l\'argent reste dans vos portefeuilles).',leftFrom:'Argent pris dans le portefeuille',pickWallet2:'Choisissez le portefeuille utilisé',storedIn:'Argent reçu dans (pour savoir où il est)',pickWallet:'Choisissez le portefeuille où l\'argent est arrivé',
   overBudget:'Les budgets ({b}) dépassent l\'argent dans vos portefeuilles ({w}) de {d}. Réduisez un budget ou vérifiez les soldes.',
   negWallet:'{w} est sous 0 : un retrait ou transfert n\'a sans doute pas été noté (Transfert, ou Ajuster le solde en touchant le portefeuille). Vos budgets ne changent pas.',shareInto:'Répartir dans les objectifs',copyLink:'Copier le lien de connexion',linkCopied:'Lien copié — ouvrez-le sur l\'autre appareil',
   linkHint:'Ouvrez ce lien sur un autre appareil (ou navigateur) pour le connecter en une fois. Il contient votre code d\'accès : ne l\'envoyez qu\'à vous-même.',
-  personal:'Personnel',fundsS:'Fonds',notAllocated:'Non réparti',heldIn:'Où est l\'argent',fundIncomeS:'Répartition prévue des entrées',
+  personal:'Personnel',fundsS:'Fonds',notAllocated:'Non réparti',heldIn:'Où est l\'argent',fundIncomeS:'Budget de la mission par catégorie',
   adjust:'Ajuster le solde',adjustment:'Ajustement',recorded:'Solde enregistré',actual:'Montant réel',walletHist:'Historique du portefeuille',
   whose:'Argent de',nothingToAdjust:'Aucune différence',addedSplit:'Le montant ajouté est partagé entre les objectifs',removedSplit:'Le montant retiré est pris sur chaque objectif',
   equalParts:'Parts égales',byNeed:'Selon le besoin',shareHow:'Comment partager ?',hide:'Masquer',showIt:'Afficher',delOk:'Supprimé',
@@ -276,12 +278,12 @@ const TX = {
   connecting:'Connexion…',connOk:'Connecté à la Google Sheet',backup:'Sauvegarde',exportB:'Exporter (fichier JSON)',importB:'Importer une sauvegarde',
   importOk:'Sauvegarde importée',bgS:'Image de fond',bgChoose:'Choisir une photo',bgReset:'Image par défaut',
   hello:'Total dans les portefeuilles',heroSub:'Budgets {b} · Épargne {g}',
-  leftTitle:'Reste des budgets',leftIntro:'Il reste de l\'argent dans ces budgets. Où le mettre avant la nouvelle répartition ?',
-  leftKeep:'Garder dans chaque budget',leftGoals:'Partager entre les objectifs d\'épargne',leftOne:'Vers un budget / objectif',leftPool:'Vers À répartir',
+  leftTitle:'Reste des budgets',leftIntro:'Il reste ces montants dans les budgets du mois passé. Que faire avant les nouveaux budgets ?',
+  leftKeep:'Ajouter au même budget ce mois-ci',leftGoals:'Mettre dans l\'épargne',leftOne:'Vers un autre budget',leftPool:'Vers À répartir',
   leftSum:'Reste des budgets',leftNote:'Reste du mois',expBud:'Dépenses sur budgets',expSav:'Dépenses sur épargne',todayBtn:'Aujourd\'hui',lines_n:'lignes (détails)',savTransfer:'Transfert d\'épargne',savTransferSub:'Épargne → épargne ou budget',
   destAuto:'Répartition par défaut',destOne:'Dans un budget / objectif précis',destination:'Destination',from:'De',to:'Vers',fee:'Frais de transfert ?',feeAmount:'Montant des frais',feeEnv:'Frais imputés à',
   next:'Suivant',back:'Retour',confirm:'Confirmer',skip:'Passer (0)',received:'Montant reçu',forMonth:'Mois du salaire',
-  summary:'Récapitulatif',remaining:'Reste',unassigned:'Non affecté → À répartir',overAlloc:'Le total dépasse le montant',
+  summary:'Récapitulatif',remaining:'Reste',unassigned:'Non budgété (reste dans le portefeuille)',overAlloc:'Le total dépasse le montant',
   preview:'Voir la répartition',editAmount:'Modifier le montant',addLine:'+ ligne',source:'Prendre dans',
   target:'Objectif',deadline:'Échéance',perMonth:'par mois nécessaire',reached:'Atteint',expired:'Échéance passée',reserve:'Réserve mensuelle',yearly:'Annuel',
   use:'Utiliser',release:'Libérer',noTarget:'Montant cible non défini',left:'Reste',of:'sur',
@@ -304,18 +306,20 @@ const TX = {
   lgUnder:'Dans le rythme',lgOver:'Au-dessus du rythme du jour',lgBad:'Budget dépassé',lgTick:'Repère du jour',
   householdNote:'Au ménage',emoji:'Emoji',pickErr:'Choisissez « De » et « Vers » différents'},
  en:{home:'Home',goals:'Goals',reports:'Reports',history:'History',settings:'Settings',
-  accounts:'Wallets',total:'Total',budgets:'Budgets',reserves:'Precautionary savings',toAssign:'To assign',
+  accounts:'Wallets',total:'Total',budgets:'Budgets',reserves:'Precautionary savings',toAssign:'Wallet money',
   salaryAvail:'Is this salary available?',yes:'Yes',notYet:'Not yet',
   expense:'Expense',irregular:'Additional income',salary:'Salary',saving:'Saving',transfer:'Transfer',move:'Reassign',
   expenseSub:'Amount → category',irregularSub:'Auto split or into one budget',salarySub:'Step-by-step split',savingSub:'Into goals',
   transferSub:'Between wallets (+ fees)',moveSub:'From one budget to another',
   amount:'Amount',account:'Wallet',date:'Date',note:'Note (optional)',category:'Category',save:'Save',
   saved:'Saved',undo:'Undo',deleted:'Deleted',tapCat:'Tap a category to save',
-  withdrawGoal:'Use savings',advanced:'Advanced options',pickWallet2:'Choose the wallet used',storedIn:'Money received in (to know where it is)',pickWallet:'Choose the wallet where the money arrived',
+  withdrawGoal:'Use savings',advanced:'Advanced options',sinceDate:'Since {d} (last salary)',missionSince:'Mission since {d}',startMission:'Start new mission',
+  sureMission:'Reset the budgets?',newMission:'New mission',resetNote:'Reset',
+  leftUnchecked:'Unticked budgets restart from 0 (the money stays in your wallets).',leftFrom:'Money taken from wallet',pickWallet2:'Choose the wallet used',storedIn:'Money received in (to know where it is)',pickWallet:'Choose the wallet where the money arrived',
   overBudget:'Budgets ({b}) are more than the money in your wallets ({w}) by {d}. Lower a budget or check the wallet balances.',
   negWallet:'{w} is below 0: a withdrawal or transfer was probably not recorded (Transfer, or Adjust balance by tapping the wallet). Your budgets are not affected.',shareInto:'Share into goals',copyLink:'Copy connection link',linkCopied:'Link copied — open it on the other device',
   linkHint:'Open this link on another device (or browser) to connect it in one step. It contains your access code: only send it to yourself.',
-  personal:'Personal',fundsS:'Funds',notAllocated:'Not allocated',heldIn:'Where the money is',fundIncomeS:'Planned split of money received',
+  personal:'Personal',fundsS:'Funds',notAllocated:'Not allocated',heldIn:'Where the money is',fundIncomeS:'Mission budget per category',
   adjust:'Adjust balance',adjustment:'Adjustment',recorded:'Recorded balance',actual:'Actual amount',walletHist:'Wallet history',
   whose:'Money of',nothingToAdjust:'No difference',addedSplit:'The added amount is shared between goals',removedSplit:'The removed amount is taken from each goal',
   equalParts:'Equal parts',byNeed:'By need',shareHow:'How to share?',hide:'Hide',showIt:'Show',delOk:'Deleted',
@@ -332,12 +336,12 @@ const TX = {
   connecting:'Connecting…',connOk:'Connected to the Google Sheet',backup:'Backup',exportB:'Export (JSON file)',importB:'Import a backup',
   importOk:'Backup imported',bgS:'Background image',bgChoose:'Choose a photo',bgReset:'Default image',
   hello:'Total in wallets',heroSub:'Budgets {b} · Savings {g}',
-  leftTitle:'Leftover budget',leftIntro:'There is money left in these budgets. Where should it go before the new split?',
-  leftKeep:'Keep in each budget',leftGoals:'Share between savings goals',leftOne:'To one budget / goal',leftPool:'To "To assign"',
+  leftTitle:'Leftover budget',leftIntro:'These amounts are left in last month\'s budgets. What should happen before the new budgets?',
+  leftKeep:'Add to the same budget this month',leftGoals:'Put into savings',leftOne:'To another budget',leftPool:'To "To assign"',
   leftSum:'Leftover budget',leftNote:'Month leftover',expBud:'Spent from budgets',expSav:'Spent from savings',todayBtn:'Today',lines_n:'lines (details)',savTransfer:'Savings transfer',savTransferSub:'Savings → savings or budget',
   destAuto:'Default split',destOne:'Into one budget / goal',destination:'Destination',from:'From',to:'To',fee:'Transfer fees?',feeAmount:'Fee amount',feeEnv:'Fees charged to',
   next:'Next',back:'Back',confirm:'Confirm',skip:'Skip (0)',received:'Amount received',forMonth:'Salary month',
-  summary:'Summary',remaining:'Remaining',unassigned:'Unassigned → To assign',overAlloc:'Total is more than the amount',
+  summary:'Summary',remaining:'Remaining',unassigned:'Not budgeted (stays in the wallet)',overAlloc:'Total is more than the amount',
   preview:'Show the split',editAmount:'Change the amount',addLine:'+ line',source:'Take from',
   target:'Target',deadline:'Deadline',perMonth:'needed per month',reached:'Reached',expired:'Deadline passed',reserve:'Monthly reserve',yearly:'Yearly',
   use:'Use',release:'Release',noTarget:'No target amount set',left:'Left',of:'of',
@@ -366,7 +370,7 @@ function t(k){ return (TX[LANG] && TX[LANG][k]) || TX.fr[k] || k; }
 /* =====================================================================
    2. DEFAULT SET-UP
    ===================================================================== */
-const V = 5; // data-format version
+const V = 6; // data-format version
 const USABLE = ['urgency','health']; // savings that can be spent directly from the Expense form
 const EMO = {cash:'💵',orange:'🟠',mvola:'🟡',bank:'🏦',household:'🛒',savbank:'🏛️',savcash:'💰',zawallet:'🎶',fwcash:'🧭',
   rent:'🏠',jirama:'💡',food:'🍚',fuel:'⛽',transport:'🚌',maintenance:'🔧',laundry:'🧺',internet:'🌐',netflix:'🎬',
@@ -409,7 +413,7 @@ function makeDefaults(){
       G('julyvac','Vacances de juillet','July vacation','goal','2027-07-30',true,6),
       G('carrepair','Réparation voiture','Car repair','goal','2027-01-31',false,7)],
     Settings:{
-      version:V, startMonth: monthOf(today()), savAccount:'savbank', funds:FUNDS_DEF, savingMode:'equal',
+      version:V, startMonth: monthOf(today()), savAccount:'savbank', funds:FUNDS_DEF, savingMode:'equal', missions:{fieldwork:{start:today()}},
       fundIncome:{fieldwork:{lines:FW_CATS.map(c=>({env:'c:'+c[0],amount:0}))}},
       salaries:[
         {id:'s1',name_fr:'Salaire 1',name_en:'Salary 1',amount:1500000,account:'bank',lines:[
@@ -435,6 +439,11 @@ function migrate(){
       if(g.id==='vacation'){ g.name_fr='Vacances de janvier'; g.name_en='January vacation'; } });
     (S.salaries||[]).forEach(s=>(s.lines||[]).forEach(l=>{ if(LINES_V2[l.env]!=null) l.amount=LINES_V2[l.env]; }));
     S.irregular=Object.assign({threshold:200000,savingsPct:70,personal:['aroo','ohanna','cece'],account:'bank'},S.irregular||{},{remainderGoal:'land'});
+  }
+  if(ver<6){
+    S.missions=S.missions||{};
+    funds().filter(f=>f.cats).forEach(f=>{ if(!S.missions[f.id]) startMission(f.id,true); });
+    call('apiSetSetting','missions',S.missions);
   }
   if(ver<5){
     S.funds=S.funds||FUNDS_DEF; S.savingMode=S.savingMode||'equal';
@@ -593,13 +602,34 @@ function balances(asOf,fund){
     else if(r.type==='expense'){ add(acc,r.acc,-a); add(env,r.env,-a); }
     else if(r.type==='transfer'){ add(acc,r.acc,-a); add(acc,r.acc2,a); }
     else if(r.type==='move'){ add(env,r.env,-a); add(env,r.env2,a); }
-    else if(r.type==='adjust'){ add(acc,r.acc,a); add(env,r.env,a); }   // wallet correction (amount can be negative)
+    else if(r.type==='adjust'){ add(acc,r.acc,a); add(env,r.env,a); }
+    else if(r.type==='budget'){ add(env,r.env,a); }                      // budget set for a category (a plan, not money)   // wallet correction (amount can be negative)
   }
   const totAcc=Object.values(acc).reduce((s,v)=>s+v,0);
   const totEnv=Object.values(env).reduce((s,v)=>s+v,0);
   return {acc,env,pool:totAcc-totEnv,totAcc};
 }
 function spentInMonth(m,fund){ const s={}; D.ledger.forEach(r=>{ if(r.type==='expense'&&rf(r)===(fund||'')&&monthOf(r.date)===m) s[r.env]=(s[r.env]||0)+r.amount; }); return s; }
+function periodStart(fund){
+  if(fund){ const m=(D.settings.missions||{})[fund]; return (m&&m.start)||'0000-00-00'; }
+  const sal=D.ledger.filter(r=>r.ref&&r.ref.startsWith('sal-')&&!rf(r));
+  if(!sal.length) return monthOf(today())+'-01';
+  const lastM=sal.map(r=>r.ref.slice(-7)).sort().pop();
+  return sal.filter(r=>r.ref.endsWith(lastM)).map(r=>r.date).sort()[0];
+}
+function spentSince(start,fund){ const s={}; D.ledger.forEach(r=>{ if(r.type==='expense'&&rf(r)===(fund||'')&&r.date>=start) s[r.env]=(s[r.env]||0)+r.amount; }); return s; }
+/** Field work: a new mission resets every category to its planned budget. */
+function startMission(fund,silent){
+  const S=D.settings, plan=((S.fundIncome||{})[fund]||{}).lines||[], date=today(), grp=uid(), ref='mission-'+fund+'-'+uid();
+  const FB=balances(null,fund), rows=[];
+  cats(fund).forEach(c=>{ const b=Math.round(FB.env['c:'+c.id]||0); if(b) rows.push(row({type:'budget',amount:-b,env:'c:'+c.id,date,grp,ref,fund,note:t('resetNote')})); });
+  plan.forEach(l=>{ if(num(l.amount)>0) rows.push(row({type:'budget',amount:num(l.amount),env:l.env,date,grp,ref,fund,note:t('newMission')})); });
+  S.missions=S.missions||{}; S.missions[fund]={start:date};
+  call('apiSetSetting','missions',S.missions);
+  if(silent){ D.ledger.push(...rows); if(rows.length) call('apiAppend',rows); } else commit(rows,t('newMission'));
+}
+function askMission(btn,fund){ if(!btn.dataset.sure){ btn.dataset.sure='1'; btn.textContent=t('sureMission'); return; } startMission(fund); }
+
 /** Equal parts taken back from the goals that hold money (used when a savings wallet is adjusted down). */
 function equalDraw(amount){
   const env=balances().env;
@@ -786,18 +816,18 @@ function render(){
 function toggleLang(){ LANG=LANG==='fr'?'en':'fr'; lsSet('bt_lang',LANG); render(); }
 
 /** Budget tile: progress of this month's spending, with a tick at today's pace (budget × day ÷ days in month). */
-function budgetTile(key,o,B,spentM,cls,style){
+function budgetTile(key,o,B,spentM,cls,style,tick){
   const bal=B.env[key]||0, spent=spentM[key]||0, budget=bal+spent;
-  const d=new Date(), days=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(), tick=d.getDate()/days;
+  if(tick==null) tick=0;
   const pct=budget>0?Math.min(100,spent/budget*100):(spent>0?100:0);
   let state=budget>0?'ok':'', badge='';
   if(bal<0){ state='bad'; badge=`<span class="badge bad">${t('overspent')}</span>`; }
-  else if(budget>0 && spent>budget*tick) state='over';
+  else if(budget>0 && tick && spent>budget*tick) state='over';
   return `<button class="tile ${cls}" ${style?`style="${style}"`:''} onclick="openExpense('${key}')">
     ${badge}<span class="e">${esc(em(o))}</span><span class="n">${esc(nm(o))}</span>
     <span class="v ${bal<0?'neg':''}">${fmt(bal)}</span>
     <span class="s">${fmtK(spent)} / ${fmtK(budget)}</span>
-    <span class="pb"><i class="${state}" style="width:${pct}%"></i>${budget>0?`<b style="left:${tick*100}%"></b>`:''}</span></button>`;
+    <span class="pb"><i class="${state}" style="width:${pct}%"></i>${budget>0&&tick?`<b style="left:${tick*100}%"></b>`:''}</span></button>`;
 }
 function goalTile(g,B){
   const bal=B.env['g:'+g.id]||0, tg=num(g.target), pct=tg?Math.min(100,bal/tg*100):0, dl=effDeadline(g,today());
@@ -834,18 +864,15 @@ function vHome(){
     <div class="big">${fmt(totW)}</div><div class="sub">${t('heroSub').replace('{b}',fmt(totBud)).replace('{g}',fmt(totSav))}</div></div>`+h;
   h+=`<h2 class="sec s-acc">${t('accounts')}<span class="tot">${fmt(totW)}</span></h2><div class="tiles">`+
     W.map(a=>walletTile(a,AB,'s-acc')).join('')+`</div>`;
-  if(Math.round(B.pool)>0){
-    h+=`<div class="card" style="margin-top:12px"><div class="row"><div class="grow"><b>📥 ${t('toAssign')}</b></div><span class="amt ${B.pool<0?'neg':''}">${fmt(B.pool)}</span></div>
-    ${B.pool>0?`<div class="row" style="margin-top:8px"><button class="btn sm" onclick="openSaving('')">${t('toGoals')}</button><button class="btn sm sec" onclick="openMove('')">${t('toCat')}</button></div>`:''}</div>`;
-  }
   // Budgets
   const pc=cats(), totB=pc.reduce((s,c)=>s+(B.env['c:'+c.id]||0),0);
   const budPos=pc.reduce((s,c)=>s+Math.max(0,B.env['c:'+c.id]||0),0);
-  if(Math.round(budPos-totW)>0) h+=`<div class="card" style="margin-top:12px;border-left:4px solid var(--warn)">⚠️ ${t('overBudget').replace('{b}',fmt(budPos)).replace('{w}',fmt(totW)).replace('{d}',fmt(budPos-totW))}</div>`;
+  if(budPos>0&&Math.round(budPos-totW)>0) h+=`<div class="card" style="margin-top:12px;border-left:4px solid var(--warn)">⚠️ ${t('overBudget').replace('{b}',fmt(budPos)).replace('{w}',fmt(totW)).replace('{d}',fmt(budPos-totW))}</div>`;
   const negW=W.filter(a=>(B.acc[a.id]||0)<0);
   if(negW.length) h+=`<div class="card" style="border-left:4px solid var(--over)"><span class="muted">ℹ️ ${t('negWallet').replace('{w}',negW.map(a=>em(a)+' '+nm(a)).join(', '))}</span></div>`;
-  h+=`<h2 class="sec s-bud">${t('budgets')}<span class="tot">${fmt(totB)}</span></h2><div class="tiles">`+
-    pc.map(c=>budgetTile('c:'+c.id,c,B,spentM,'s-bud')).join('')+`</div>
+  const ps=periodStart(''), spP=spentSince(ps,''), tick=Math.min(1,((new Date(today())-new Date(ps))/86400000+1)/30.44);
+  h+=`<h2 class="sec s-bud">${t('budgets')}<span class="tot">${t('left')} ${fmt(totB)}</span></h2><div class="muted" style="margin:-4px 2px 8px">${t('sinceDate').replace('{d}',dateLabel(ps))}</div><div class="tiles">`+
+    pc.map(c=>budgetTile('c:'+c.id,c,B,spP,'s-bud','',tick)).join('')+`</div>
     <div class="legend2"><span><i style="background:#16a34a"></i>${t('lgUnder')}</span><span><i style="background:var(--over)"></i>${t('lgOver')}</span><span><i style="background:var(--warn)"></i>${t('lgBad')}</span><span><i style="background:var(--ink);width:3px"></i>${t('lgTick')}</span></div>`;
   // Reserves
   const res=acts(D.goals).filter(g=>g.kind==='reserve');
@@ -864,15 +891,15 @@ function fundSection(f,AB,m){
   const held=D.accounts.filter(a=>Math.round(FB.acc[a.id]||0)!==0).map(a=>`${em(a)} ${esc(nm(a))} ${fmtK(FB.acc[a.id])}`).join(' · ');
   let h=`<h2 class="sec" style="--c:${col};color:${col}"><span style="width:10px;height:10px;border-radius:3px;background:${col}"></span>${esc(em(f)+' '+nm(f))}<span class="tot">${fmt(tot)}</span></h2>
     <div class="fundcard" style="--c:${col}"><div class="held">${t('heldIn')}: ${held||'—'}</div>
-    ${f.cats&&Math.round(FB.pool)>0?`<div class="row" style="margin-bottom:8px"><div class="grow muted">${t('notAllocated')}</div><span class="amt">${fmt(FB.pool)}</span></div>`:''}
+    ${f.cats?`<div class="row" style="margin-bottom:8px"><div class="grow muted">${periodStart(f.id)>'0001'?t('missionSince').replace('{d}',dateLabel(periodStart(f.id))):'—'}</div><button class="btn sm ghost" style="color:${col}" onclick="askMission(this,'${f.id}')">🔄 ${t('startMission')}</button></div>`:''}
     ${(()=>{ if(!f.cats) return ''; const bp=cats(f.id).reduce((s,c)=>s+Math.max(0,FB.env['c:'+c.id]||0),0);
-      return Math.round(bp-tot)>0?`<div class="muted" style="margin-bottom:8px;color:var(--warn)">⚠️ ${t('overBudget').replace('{b}',fmt(bp)).replace('{w}',fmt(tot)).replace('{d}',fmt(bp-tot))}</div>`:''; })()}
+      return bp>0&&Math.round(bp-tot)>0?`<div class="muted" style="margin-bottom:8px;color:var(--warn)">⚠️ ${t('overBudget').replace('{b}',fmt(bp)).replace('{w}',fmt(tot)).replace('{d}',fmt(bp-tot))}</div>`:''; })()}
     ${(()=>{ const neg=fundWallets(f.id).filter(a=>Math.round(FB.acc[a.id]||0)<0); return neg.length?`<div class="muted" style="margin-bottom:8px">ℹ️ ${t('negWallet').replace('{w}',neg.map(a=>em(a)+' '+nm(a)).join(', '))}</div>`:''; })()}
     <div class="row"><button class="btn sm" style="background:${col}" onclick="openIrregular('${f.id}')">💰 ${t('income_t')}</button>
     <button class="btn sm sec" onclick="openExpense('','${f.id}')">🧾 ${t('expense')}</button>
     <button class="btn sm sec" onclick="openTransfer('',0,'${f.id}')">⇄ ${t('transfer')}</button></div></div>`;
   if(f.cats){
-    const sp=spentInMonth(m,f.id);
+    const sp=spentSince(periodStart(f.id),f.id);
     h+=`<div class="tiles">`+cats(f.id).map(c=>budgetTile('c:'+c.id,c,FB,sp,'s-fund',`--c:${col}`)).join('')+`</div>`;
   }
   return h;
@@ -929,7 +956,7 @@ function vReports(){
   h+=`<h2>${t('byCat')}</h2><div class="card">`+(arr.length?arr.map(([k,v])=>`<div class="hbar"><span class="l">${esc(envLabel(k,RFUND))}</span><span class="t"><i style="width:${v/mx*100}%;background:${col(k)}"></i></span><span class="v">${fmt(v)}</span></div>`).join('')+
     `<div class="legend"><span><i style="background:#d97706"></i>${t('expBud')}</span><span><i style="background:#2563eb"></i>${t('expSav')}</span></div>`:`<div class="muted">${t('noData')}</div>`)+`</div>`;
   const al={};
-  inM.forEach(r=>{ if(r.type==='income'&&r.env) al[r.env]=(al[r.env]||0)+r.amount;
+  inM.forEach(r=>{ if((r.type==='income'||r.type==='budget')&&r.env) al[r.env]=(al[r.env]||0)+r.amount;
     if(r.type==='move'){ if(r.env2) al[r.env2]=(al[r.env2]||0)+r.amount; if(r.env) al[r.env]=(al[r.env]||0)-r.amount; } });
   const keys=[...new Set(Object.keys(al).concat(Object.keys(by)))].filter(k=>k.startsWith('c:')).sort((a,b)=>byOrder(envObj(a)||{},envObj(b)||{}));
   h+=`<h2>${t('budgetVsActual')}</h2><div class="card">`+(keys.length?`<table><tr><th>${t('category')}</th><th>${t('allocated')}</th><th>${t('spent')}</th></tr>`+
@@ -960,7 +987,11 @@ function groupInfo0(rs){
   const arrow=x=>`${envName(x.env)} → ${envName(x.env2)} ${fmt(x.amount)}`;
   if(r.ref&&r.ref.startsWith('sal-')){ const s=(D.settings.salaries||[]).find(x=>x.id===r.ref.split('-')[1]);
     const inc=rs.filter(x=>x.type==='income');
-    return {k:'k-inc',label:'💼 '+(s?nm(s):t('salary')),amt:inc.reduce((a,x)=>a+x.amount,0),cls:'pos',lines:inc.map(x=>envName(x.env)+' '+fmt(x.amount)+(x.acc!==r.acc?' ('+accName(x.acc)+')':'')),acc:accName(r.acc)}; }
+    return {k:'k-inc',label:'💼 '+(s?nm(s):t('salary')),amt:inc.reduce((a,x)=>a+x.amount,0),cls:'pos',
+      lines:rs.map(x=>x.type==='income'&&!x.env?'💳 → '+accName(x.acc)+' '+fmt(x.amount):envName(x.env)+' '+fmt(x.amount)+(x.type==='income'?' ('+accName(x.acc)+')':''))}; }
+  if(r.ref&&r.ref.startsWith('mission-')) return {k:'k-mv',label:'🔄 '+t('newMission'),amt:rs.filter(x=>x.amount>0).reduce((a,x)=>a+x.amount,0),lines:rs.map(x=>envLabel(x.env,rf(x))+' '+fmt(x.amount))};
+  if(rs.every(x=>x.type==='budget'||x.type==='move')&&rs.some(x=>x.type==='budget')) return {k:'k-mv',label:'📋 '+(r.ref&&r.ref.startsWith('left-')?t('leftTitle'):t('budgets')),amt:rs.reduce((a,x)=>a+(x.type==='budget'?x.amount:0),0),
+      lines:rs.map(x=>x.type==='move'?`${envLabel(x.env,rf(x))} → ${envLabel(x.env2,rf(x))} ${fmt(x.amount)}`:envLabel(x.env,rf(x))+' '+fmt(x.amount))};
   if(r.ref&&r.ref.startsWith('roll-')) return {k:'k-mv',label:'🔁 '+t('rollover'),amt:tot,lines:rs.map(arrow)};
   const tr=rs.find(x=>x.type==='transfer'), trLines=rs.filter(x=>x.type==='transfer').map(x=>`${accName(x.acc)} → ${accName(x.acc2)} ${fmt(x.amount)}`);
   if(tr&&!rs.some(x=>x.type==='move'||x.type==='income')){ const fe=rs.find(x=>x.type==='expense');
@@ -1194,11 +1225,13 @@ function openSalaryPick(){
 }
 function openSalary(id){
   const s=(D.settings.salaries||[]).find(x=>x.id===id), m=monthOf(today());
-  W={s,amount:num(s.amount),acc:null,sav:defSav(),date:today(),month:m,lines:(s.lines||[]).map(l=>({env:l.env,amount:num(l.amount)})),
-     left:[],leftMode:'keep',leftEnv:'g:land',i:0};
+  W={s,amount:num(s.amount),acc:null,leftEnv:'c:food',sav:defSav(),date:today(),month:m,lines:(s.lines||[]).map(l=>({env:l.env,amount:num(l.amount)})),
+     left:[],i:0};
   // First salary of the month: offer to reallocate what is left in the budgets
   const first=!D.ledger.some(r=>r.ref&&r.ref.startsWith('sal-')&&r.ref.endsWith('-'+m));
-  if(first){ const B=balances(); W.left=cats().map(c=>({env:'c:'+c.id,amount:Math.round(B.env['c:'+c.id]||0),on:true})).filter(x=>x.amount>0); }
+  W.neg=[]; W.leftMode='keep'; W.leftNeed=false; W.leftAcc=null;
+  if(first){ const B=balances(); const all=cats().map(c=>({env:'c:'+c.id,amount:Math.round(B.env['c:'+c.id]||0),on:true}));
+    W.left=all.filter(x=>x.amount>0); W.neg=all.filter(x=>x.amount<0).map(x=>({env:x.env,amount:x.amount})); }
   W.seq=['head'].concat(W.left.length?['left']:[]).concat(W.lines.map((_,i)=>i)).concat(['sum']);
   wizRender();
 }
@@ -1221,6 +1254,7 @@ function pairMoves(srcs,dsts,base){
 }
 function leftTotal(){ return W.left.filter(x=>x.on).reduce((s,x)=>s+x.amount,0); }
 function wizRender(){
+  if(W.seq[W.i]==='left'&&pickVal('wLeftAcc')) W.leftAcc=pickVal('wLeftAcc');
   const st=W.seq[W.i], n=W.lines.length; let body='';
   if(st==='head'){
     body=calcHtml(W.amount,t('received'))+`<div class="lbl">${t('storedIn')}</div>`+walletPick('wAcc',W.acc)+`<div id="wErr" class="err"></div>`+
@@ -1229,16 +1263,19 @@ function wizRender(){
       <div class="f"><label>${t('date')}</label><input id="wDate" type="date" value="${W.date}"></div></div>
       <button class="btn block" onclick="wizNext()">${t('next')}</button>`+keypadHtml();
   } else if(st==='left'){
-    const opt=(v,lab)=>`<button type="button" class="${W.leftMode===v?'on':''}" data-v="${v}" onclick="pickOne(this);W.leftMode='${v}';$('wLeftEnv').style.display=W.leftMode==='one'?'':'none'">${lab}</button>`;
+    const opt=(v,lab)=>`<button type="button" class="${W.leftMode===v?'on':''}" data-v="${v}" onclick="W.leftMode='${v}';wizRender()">${lab}</button>`;
     body=`<div class="wizlab">🧮 ${t('leftTitle')}</div><div class="muted" style="margin:0 2px 8px">${t('leftIntro')}</div>
       <div class="card">`+W.left.map((x,k)=>`<label class="line" style="cursor:pointer"><input type="checkbox" ${x.on?'checked':''} onchange="W.left[${k}].on=this.checked;$('wLeftTot').textContent=fmt(leftTotal())" style="width:20px;height:20px"><span class="lab">${esc(envName(x.env))}</span><span class="amt">${fmt(x.amount)}</span></label>`).join('')+
       `<div class="sum"><span>${t('total')}</span><span id="wLeftTot">${fmt(leftTotal())}</span></div></div>
-      <div class="pick" data-pick="wLeftMode" style="flex-direction:column;align-items:stretch">${opt('keep','📦 '+t('leftKeep'))}${opt('goals','🎯 '+t('leftGoals'))}${opt('one','📌 '+t('leftOne'))}${opt('pool','📥 '+t('leftPool'))}</div>
-      <div class="f" id="wLeftEnv" style="${W.leftMode==='one'?'':'display:none'}"><select onchange="W.leftEnv=this.value">${envOptions(W.leftEnv)}</select></div>
+      <div class="muted" style="margin:-4px 2px 8px">${t('leftUnchecked')}</div>
+      <div class="pick" data-pick="wLeftMode" style="flex-direction:column;align-items:stretch">${opt('keep','📦 '+t('leftKeep'))}${opt('goals','🎯 '+t('leftGoals'))}${opt('one','📌 '+t('leftOne'))}</div>
+      ${W.leftMode==='goals'?`<div class="pick">${[[false,'⚖️ '+t('equalParts')],[true,'📈 '+t('byNeed')]].map(([v,l])=>`<button type="button" class="${W.leftNeed===v?'on':''}" onclick="W.leftNeed=${v};wizRender()">${l}</button>`).join('')}</div>
+        <div class="lbl">${t('leftFrom')}</div>${walletPick('wLeftAcc',W.leftAcc||W.acc)}`:''}
+      ${W.leftMode==='one'?`<div class="f"><select onchange="W.leftEnv=this.value">${envOptions(W.leftEnv,{catsOnly:true})}</select></div>`:''}
       <div class="two"><button class="btn sec" onclick="wizBack()">${t('back')}</button><button class="btn" onclick="wizNext()">${t('next')}</button></div>`;
   } else if(st==='sum'){
     const tot=W.lines.reduce((s,x)=>s+x.amount,0), rest=W.amount-tot, lt=W.left.length&&W.leftMode!=='keep'?leftTotal():0;
-    const dest=W.leftMode==='goals'?t('leftGoals'):W.leftMode==='one'?envName(W.leftEnv):t('toAssign');
+    const dest=W.leftMode==='goals'?t('leftGoals'):W.leftMode==='one'?envName(W.leftEnv):t('leftKeep');
     body=(lt?`<div class="card"><div class="line"><span class="lab">🧮 ${t('leftSum')} → ${esc(dest)}</span><span class="amt">${fmt(lt)}</span></div></div>`:'')+
       `<div class="card">`+W.lines.filter(l=>l.amount).map(l=>`<div class="line"><span class="lab">${esc(envName(l.env))}</span><span class="amt">${fmt(l.amount)}</span></div>`).join('')+
       (rest>0?`<div class="line"><span class="lab muted">${t('unassigned')}</span><span class="amt">${fmt(rest)}</span></div>`:'')+
@@ -1257,6 +1294,7 @@ function wizStore(){
   const st=W.seq[W.i];
   if(st==='head'){ W.amount=calcVal(); W.acc=pickVal('wAcc')||W.acc; W.sav=pickVal('wSav')||W.sav; W.month=$('wMonth').value||W.month; W.date=$('wDate').value||W.date; }
   else if(typeof st==='number'){ W.lines[st].amount=calcVal(); }
+  else if(st==='left'&&pickVal('wLeftAcc')) W.leftAcc=pickVal('wLeftAcc');
 }
 function wizNext(){ wizStore(); if(W.seq[W.i]==='head'&&(!W.amount||!W.acc)){ if(!W.acc) $('wErr').textContent=t('pickWallet'); return; } W.i=Math.min(W.seq.length-1,W.i+1); wizRender(); }
 function wizBack(){ wizStore(); W.i=Math.max(0,W.i-1); wizRender(); }
@@ -1264,20 +1302,30 @@ function wizSave(){
   const ref='sal-'+W.s.id+'-'+W.month;
   if(D.ledger.some(r=>r.ref===ref)){ toast(t('dup')); return; }
   const grp=uid();
-  const accFor=env=>env.startsWith('g:')&&W.sav?W.sav:W.acc;   // savings go straight into the savings wallet
-  const rows=W.lines.filter(l=>l.amount>0).map(l=>row({type:'income',amount:l.amount,acc:accFor(l.env),env:l.env,date:W.date,grp,ref,note:nm(W.s)}));
-  const rest=W.amount-W.lines.reduce((s,x)=>s+x.amount,0);
-  if(rest>0) rows.push(row({type:'income',amount:rest,acc:W.acc,env:'',date:W.date,grp,ref,note:nm(W.s)}));
-  // leftover of last month's budgets (moved before the new money arrives)
-  const src=W.left.filter(x=>x.on&&x.amount>0);
-  if(src.length&&W.leftMode!=='keep'){
-    const tot=src.reduce((s,x)=>s+x.amount,0);
-    const dst=W.leftMode==='goals'?equalGoals(tot,W.date):[{env:W.leftMode==='one'?W.leftEnv:'',amount:tot}];
-    const lg=uid();
-    rows.push(...pairMoves(src,dst,{date:W.date,grp:lg,note:t('leftNote')}));
-    const toGoals=dst.filter(d=>d.env.startsWith('g:')).reduce((s,d)=>s+d.amount,0);
-    if(toGoals>0&&W.sav) rows.push(row({type:'transfer',amount:toGoals,acc:W.acc,acc2:W.sav,date:W.date,grp:lg,note:t('leftNote')}));
+  const rows=[], base={date:W.date,grp,ref,note:nm(W.s)};
+  // 1. last month's budgets: reset, after moving what the user chose to keep/reallocate
+  const lg=uid(), lb={date:W.date,grp:lg,ref:'left-'+W.month,note:t('leftNote')};
+  if(W.left.length||W.neg.length){
+    const src=W.left.filter(x=>x.on&&x.amount>0), tot=src.reduce((s,x)=>s+x.amount,0);
+    if(tot>0&&W.leftMode==='goals'){
+      const dst=W.leftNeed?byNeed(tot,W.date,balances().env):equalGoals(tot,W.date);
+      rows.push(...pairMoves(src,dst,lb));
+      const toGoals=dst.filter(d=>d.env.startsWith('g:')).reduce((s,d)=>s+d.amount,0);
+      const from=W.leftAcc||W.acc;
+      if(toGoals>0&&W.sav&&from!==W.sav) rows.push(row(Object.assign({type:'transfer',amount:toGoals,acc:from,acc2:W.sav},lb)));
+    } else if(tot>0&&W.leftMode==='one'){
+      rows.push(...pairMoves(src,[{env:W.leftEnv,amount:tot}],lb));
+    } // 'keep': stays in the same budget and is added to this month's amount
+    const reset=W.left.filter(x=>!x.on&&x.amount>0).concat(W.neg);   // not kept: back to 0 (the money stays in the wallets)
+    reset.forEach(x=>rows.push(row(Object.assign({type:'budget',amount:-x.amount,env:x.env},lb,{note:t('resetNote')}))));
   }
+  // 2. the salary: money into the wallet, savings part into the savings wallet + goals
+  const sav=W.lines.filter(l=>l.amount>0&&l.env.startsWith('g:')), savTot=sav.reduce((s,l)=>s+l.amount,0);
+  sav.forEach(l=>rows.push(row(Object.assign({type:'income',amount:l.amount,acc:W.sav||W.acc,env:l.env},base))));
+  if(W.amount-savTot>0) rows.push(row(Object.assign({type:'income',amount:W.amount-savTot,acc:W.acc,env:''},base)));
+  // 3. this month's budgets (a plan: not tied to any wallet)
+  W.lines.filter(l=>l.amount>0&&l.env.startsWith('c:')).forEach(l=>rows.push(row(Object.assign({type:'budget',amount:l.amount,env:l.env},base))));
+  rows.sort((a,b)=>(a.grp===grp?0:1)-(b.grp===grp?0:1));
   commit(rows);
 }
 
@@ -1324,7 +1372,7 @@ function openIrregular(fund){
     const fw=fundWallets(fund), own=fw.find(a=>a.fund===fund);
     sheet('💰 '+t('irregular'),fundPick(fund,"openIrregular('FUND')")+calcHtml(0)+`<div class="lbl">${t('storedIn')}</div>`+walletPick('iAcc',null,fw)+
       `<div class="two"><div class="f"><input id="iDate" type="date" value="${today()}"></div><div class="f"><input id="iNote" placeholder="${t('note')}"></div></div>`+
-      (cats(fund).length?`<button class="btn block" id="pvGo" style="background:${fundColor(fund)}" onclick="fundIncPreview('${fund}')">${t('preview')}</button>`
+      (false?``
         :`<button class="btn block" id="pvGo" style="background:${fundColor(fund)}" onclick="if(!pickVal('iAcc')){toast(t('pickWallet'));return;}P={total:calcVal(),lines:[],fund:'${fund}'};if(P.total)irregSave()">${t('save')}</button>`)+
       `<div id="pvWrap" style="margin-top:10px"></div><div id="pvBtn"></div>`+keypadHtml());
     return;
@@ -1357,8 +1405,11 @@ function fundIncPreview(fund){
 function irregSave(){
   const rest=P.total-P.lines.reduce((s,l)=>s+l.amount,0); if(rest<0) return;
   const fund=P.fund||'', grp=uid(), acc=pickVal('iAcc'), sav=fund?'':pickVal('iSav'), date=$('iDate').value||today(), note=$('iNote').value;
-  const rows=P.lines.filter(l=>l.amount>0).map(l=>row({type:'income',amount:l.amount,acc:l.env.startsWith('g:')&&sav?sav:acc,env:l.env,date,grp,note,fund}));
-  if(rest>0) rows.push(row({type:'income',amount:rest,acc,env:'',date,grp,note,fund}));
+  const b={date,grp,note,fund}, rows=[];
+  const goals=P.lines.filter(l=>l.amount>0&&l.env.startsWith('g:')), gTot=goals.reduce((s,l)=>s+l.amount,0);
+  goals.forEach(l=>rows.push(row(Object.assign({type:'income',amount:l.amount,acc:sav||acc,env:l.env},b))));
+  if(P.total-gTot>0) rows.push(row(Object.assign({type:'income',amount:P.total-gTot,acc,env:''},b)));
+  P.lines.filter(l=>l.amount>0&&l.env.startsWith('c:')).forEach(l=>rows.push(row(Object.assign({type:'budget',amount:l.amount,env:l.env},b))));
   commit(rows);
 }
 
@@ -1611,9 +1662,11 @@ function fundSave(fi){
   call('apiSetSetting','funds',D.settings.funds); toast(t('saved')); render();
 }
 function planSave(fund){
-  const F=D.settings.fundIncome=D.settings.fundIncome||{}, lines=(F[fund]=F[fund]||{lines:[]}).lines;
-  document.querySelectorAll(`#fplan_${fund} [data-l]`).forEach(i=>{ lines[+i.dataset.l].amount=num(i.value); });
-  call('apiSetSetting','fundIncome',F); toast(t('saved')); render();
+  const F=D.settings.fundIncome=D.settings.fundIncome||{}, lines=(F[fund]=F[fund]||{lines:[]}).lines, grp=uid(), rows=[];
+  document.querySelectorAll(`#fplan_${fund} [data-l]`).forEach(i=>{ const l=lines[+i.dataset.l], d=num(i.value)-num(l.amount);
+    if(d) rows.push(row({type:'budget',amount:d,env:l.env,grp,fund,note:t('fundIncomeS')})); l.amount=num(i.value); });
+  call('apiSetSetting','fundIncome',F);
+  if(rows.length) commit(rows); else { toast(t('saved')); render(); }
 }
 function salCollect(si){
   const s=D.settings.salaries[si], box=$('sal'+si);
