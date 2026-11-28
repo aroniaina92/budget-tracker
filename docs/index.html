@@ -255,7 +255,7 @@ const TX = {
   transferSub:'Entre portefeuilles (+ frais)',moveSub:'D\'un budget à un autre',
   amount:'Montant',account:'Portefeuille',date:'Date',note:'Note (facultatif)',category:'Catégorie',save:'Enregistrer',
   saved:'Enregistré',undo:'Annuler',deleted:'Supprimé',tapCat:'Touchez une catégorie pour enregistrer',
-  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',fundKind:'Type',kindMission:'Répété (missions : « Nouvelle mission » remet les budgets)',kindEvent:'Unique (événement : budget selon le plan)',
+  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',delWith:'Supprimer + {n} entrées ?',fundKind:'Type',kindMission:'Répété (missions : « Nouvelle mission » remet les budgets)',kindEvent:'Unique (événement : budget selon le plan)',
   fundShown:'Afficher dans l\'application',addFund:'Ajouter un fonds (projet, événement…)',eventBudgetS:'Budget par catégorie',addExpense:'Ajouter une dépense',budgetLbl:'Budget',newLeft:'Nouveau montant restant',editAll:'Modifier tous les budgets',editBudgets:'Modifier les budgets',editBudgetsIntro:'Indiquez ce qui reste à dépenser pour chaque catégorie (jusqu\'au prochain salaire / fin de mission). La différence est enregistrée.',
   missionLeftIntro:'Il reste ces montants de la mission précédente :',missionUnchecked:'Les montants non cochés sont remis à 0.',missionKeep:'Ajouter au même budget de la nouvelle mission',sinceDate:'Depuis le {d} (dernier salaire)',missionSince:'Mission depuis le {d}',startMission:'Nouvelle mission',
   sureMission:'Remettre les budgets ?',newMission:'Nouvelle mission',resetNote:'Remise à zéro',
@@ -315,7 +315,7 @@ const TX = {
   transferSub:'Between wallets (+ fees)',moveSub:'From one budget to another',
   amount:'Amount',account:'Wallet',date:'Date',note:'Note (optional)',category:'Category',save:'Save',
   saved:'Saved',undo:'Undo',deleted:'Deleted',tapCat:'Tap a category to save',
-  withdrawGoal:'Use savings',advanced:'Advanced options',fundKind:'Type',kindMission:'Repeated (missions: "Start new mission" resets the budgets)',kindEvent:'One-off (event: budget follows the plan)',
+  withdrawGoal:'Use savings',advanced:'Advanced options',delWith:'Delete + {n} entries?',fundKind:'Type',kindMission:'Repeated (missions: "Start new mission" resets the budgets)',kindEvent:'One-off (event: budget follows the plan)',
   fundShown:'Show in the app',addFund:'Add a fund (project, event…)',eventBudgetS:'Budget per category',addExpense:'Add expense',budgetLbl:'Budget',newLeft:'New amount left',editAll:'Edit all budgets',editBudgets:'Edit budgets',editBudgetsIntro:'Type what is left to spend for each category (until the next salary / end of the mission). The difference is recorded.',
   missionLeftIntro:'These amounts are left from the previous mission:',missionUnchecked:'Unticked amounts are reset to 0.',missionKeep:'Add to the same budget in the new mission',sinceDate:'Since {d} (last salary)',missionSince:'Mission since {d}',startMission:'Start new mission',
   sureMission:'Reset the budgets?',newMission:'New mission',resetNote:'Reset',
@@ -1712,7 +1712,7 @@ function edItem(table,o){
       <div class="lb">${t('belongsTo')}</div><select data-k="fund">${[''].concat(funds().map(f=>f.id)).map(f=>`<option value="${f}" ${(o.fund||'')===f?'selected':''}>${esc(fundName(f))}</option>`).join('')}</select>`;
   }
   x+=`<div class="acts"><button class="btn sm" style="background:var(--c)" onclick="edSave(this)">${t('save')}</button>
-    ${used?`<button class="btn sm sec" onclick="toggleItem(this)">${off?t('showIt'):t('hide')}</button>`:`<button class="btn sm danger" onclick="delItem(this)">${t('del')}</button>`}</div></div>`;
+    ${used?`<button class="btn sm sec" onclick="toggleItem(this)">${off?t('showIt'):t('hide')}</button>`:''}<button class="btn sm danger" onclick="delItem(this)">${t('del')}</button></div></div>`;
   return x;
 }
 function edSave(btn){
@@ -1727,13 +1727,30 @@ function toggleItem(btn){
   const box=btn.closest('.item'), table=box.dataset.table, list=D[table.toLowerCase()], o=list.find(x=>x.id===box.dataset.id);
   o.active=!isTrue(o.active); call('apiUpsert',table,o); render();
 }
+/** Ledger rows that use this wallet / category / goal. */
+function itemRows(table,id){
+  if(table==='Accounts') return D.ledger.filter(r=>r.acc===id||r.acc2===id);
+  const key=(table==='Categories'?'c:':'g:')+id;
+  return D.ledger.filter(r=>r.env===key||r.env2===key);
+}
+/** Delete: unused items at once; used items with their entries after a second confirmation. */
 function delItem(btn){
-  if(!btn.dataset.sure){ btn.dataset.sure='1'; btn.textContent=t('sure'); return; }
   const box=btn.closest('.item'), table=box.dataset.table, key=table.toLowerCase(), id=box.dataset.id;
-  if(isUsed(table,id)) return;
+  const rows=itemRows(table,id);
+  if(!btn.dataset.sure){ btn.dataset.sure='1'; btn.textContent=rows.length?t('delWith').replace('{n}',rows.length):t('sure'); return; }
+  const S=D.settings, ek=(table==='Categories'?'c:':'g:')+id;
+  // entries
+  if(rows.length){ const ids=new Set(rows.map(r=>r.id)); D.ledger=D.ledger.filter(r=>!ids.has(r.id)); call('apiDeleteRows',[...ids]); }
+  // settings that point to it
+  (S.salaries||[]).forEach(sl=>{ sl.lines=(sl.lines||[]).filter(l=>l.env!==ek); if(sl.account===id) sl.account=''; });
+  const F=S.fundIncome||{}; Object.keys(F).forEach(k=>{ F[k].lines=(F[k].lines||[]).filter(l=>l.env!==ek); });
+  if(S.irregular){ S.irregular.personal=(S.irregular.personal||[]).filter(x=>x!==id); if(S.irregular.remainderGoal===id) S.irregular.remainderGoal='land'; if(S.irregular.account===id) S.irregular.account=''; }
+  if(S.rollover){ S.rollover.sources=(S.rollover.sources||[]).filter(x=>x!==id); S.rollover.targets=(S.rollover.targets||[]).filter(x=>x.goal!==id); }
+  if(S.savAccount===id) S.savAccount='';
+  D.accounts.forEach(a=>{ if(table==='Categories'&&a.spend===id){ a.spend=''; call('apiUpsert','Accounts',a); } });
   D[key]=D[key].filter(x=>x.id!==id);
-  const F=D.settings.fundIncome||{}; Object.keys(F).forEach(k=>{ F[k].lines=(F[k].lines||[]).filter(l=>l.env!=='c:'+id); });
-  call('apiDeleteItem',table,id); call('apiSetSetting','fundIncome',F);
+  call('apiDeleteItem',table,id);
+  ['salaries','fundIncome','irregular','rollover','savAccount'].forEach(k=>call('apiSetSetting',k,S[k]));
   toast(t('delOk')); render();
 }
 function addItem(table,fund){

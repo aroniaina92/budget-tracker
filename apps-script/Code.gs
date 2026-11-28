@@ -31,7 +31,8 @@ var TEXT_COLS = { Goals: ['deadline'], Ledger: ['date', 'ref', 'created'] };
  */
 var API = {
   apiGetAll: apiGetAll, apiInit: apiInit, apiAppend: apiAppend, apiDeleteGroup: apiDeleteGroup,
-  apiUpsert: apiUpsert, apiBulkUpsert: apiBulkUpsert, apiSetSetting: apiSetSetting, apiDeleteItem: apiDeleteItem
+  apiUpsert: apiUpsert, apiBulkUpsert: apiBulkUpsert, apiSetSetting: apiSetSetting, apiDeleteItem: apiDeleteItem,
+  apiDeleteRows: apiDeleteRows
 };
 
 function doPost(e) {
@@ -259,6 +260,24 @@ function apiBulkUpsert(table, list) {
       sh.getRange(sh.getLastRow() + 1, 1, 1, width).setValues([row]);
       values.push(row);
     });
+    return true;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Deletes ledger rows by id (used when a wallet / category is deleted together with its entries). */
+function apiDeleteRows(ids) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var set = {};
+    (ids || []).forEach(function (id) { set[String(id)] = true; });
+    var sh = sheet_('Ledger');
+    var values = sh.getDataRange().getValues();
+    for (var i = values.length - 1; i >= 1; i--) {
+      if (set[String(values[i][0])]) sh.deleteRow(i + 1);
+    }
     return true;
   } finally {
     lock.releaseLock();

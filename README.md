@@ -81,7 +81,7 @@ Savings wallets are shown on the **Goals** page. Their amount is set with *Adjus
 
 **Saving** (from wallet money into goals): equal parts by default (remainder to Land), with a *By need* option. The default can be changed in Settings.
 
-**Settings**: coloured sections; wallets, categories and goals are blocks. *Delete* is offered only for items never used; used items can be *Hidden* (they stay in past entries).
+**Settings**: coloured sections; wallets, categories and goals are blocks. *Delete* removes an item; if it has entries, the first tap shows how many ("Delete + 3 entries?") and the second tap deletes the item with them. *Hide* keeps a used item and its history but removes it from the screens.
 The *Savings wallet* box and *Belongs to* (fund) choice appear only on new wallets.
 
 **Back**: the phone's back button (or ← at the top) closes the open form, then goes back page by page to Home; back on Home leaves the app.
