@@ -88,7 +88,8 @@ The *Savings wallet* box and *Belongs to* (fund) choice appear only on new walle
 Any expense can be paid from any wallet. If budgets add up to more than the money in your everyday wallets (savings excluded), Home shows a warning.
 A wallet below 0 just means a withdrawal or transfer was not recorded (e.g. Bank → Cash): record the transfer or adjust the wallet; budgets are not affected.
 
-**Edit budgets** (button above the budget blocks, also in the Field work block): type what is left to spend for each category at any time — e.g. when you start in the middle of a month. The difference is recorded in History.
+**Tap a budget block** to see its budget, what was spent and what is left, and change the amount left (e.g. Laundry 15 000 until the end of the month); *Edit all budgets* there changes several at once. The difference is recorded in History.
+**🧾 Add expense** (above the budget blocks, and in each fund block) opens an expense for that section only: its categories and its wallets.
 
 **Budgets are a plan, wallets are the real money.** Each budget is the amount set for the month; remaining = budget − spent since the last salary. Goals hold the money that is in the savings wallets.
 
@@ -102,7 +103,7 @@ Everything can be changed in ⚙ Settings.
 | **Salary 1 / 2** | Each month the home screen asks whether it is available. *Yes* → amount and the wallet where it arrived → **for the first salary of the month: Leftover budget**: what is left of last month's budgets; ticked ones are either added to the same budget this month (e.g. Fuel 60 000 + 15 000 left = 75 000), put into savings (equal parts or by need, taken from a wallet you choose and moved to the savings wallet) or moved to another budget; unticked ones restart from 0 (the money stays in your wallets) → each budget line confirmed one by one with its default amount → summary. This starts the new budget month. A salary cannot be recorded twice for the same month. |
 | **Additional income** | *Default split*: ≤ 200 000 Ar shared equally between the goals not yet reached; above, 70 % shared equally between goals and 30 % equally between Aroo, Ohanna and Cece personal use; rounding remainders to Land. Or *Into one budget / goal*. |
 | **Saving** | From wallet money (or a budget) into goals: equal parts by default, or by need. |
-| **Expense** | Keypad (12 000 + 3 000 works), tap a category = saved. 🚨 Urgency and 🩺 Health can be spent directly. Tapping a budget block on Home opens an expense for it. |
+| **Expense** | Keypad (12 000 + 3 000 works), tap a category = saved. 🚨 Urgency and 🩺 Health can be spent directly. Expenses are added with the 🧾 Add expense buttons (or + › Expense). |
 | **Transfer** | Between wallets, optional fee (recorded as an expense). To **🛒 Household pocket** = counted directly as *Food & groceries* spent. |
 | **Savings transfer** (advanced) | Goal → goal or goal → budget. |
 | **Reassign** (advanced) | Move budget from one category to another (or add budget from wallet money). |

@@ -2,7 +2,7 @@
  * Same-origin files are served from the cache (so the app opens without connection)
  * and refreshed in the background; requests to the Google Sheet API are never cached.
  * Change VERSION when you publish a new version of the files. */
-const VERSION = 'budget-v10';
+const VERSION = 'budget-v11';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'bg.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
