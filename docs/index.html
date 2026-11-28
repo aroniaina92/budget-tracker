@@ -255,7 +255,8 @@ const TX = {
   transferSub:'Entre portefeuilles (+ frais)',moveSub:'D\'un budget à un autre',
   amount:'Montant',account:'Portefeuille',date:'Date',note:'Note (facultatif)',category:'Catégorie',save:'Enregistrer',
   saved:'Enregistré',undo:'Annuler',deleted:'Supprimé',tapCat:'Touchez une catégorie pour enregistrer',
-  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',addExpense:'Ajouter une dépense',budgetLbl:'Budget',newLeft:'Nouveau montant restant',editAll:'Modifier tous les budgets',editBudgets:'Modifier les budgets',editBudgetsIntro:'Indiquez ce qui reste à dépenser pour chaque catégorie (jusqu\'au prochain salaire / fin de mission). La différence est enregistrée.',
+  withdrawGoal:'Utiliser l\'épargne',advanced:'Options avancées',fundKind:'Type',kindMission:'Répété (missions : « Nouvelle mission » remet les budgets)',kindEvent:'Unique (événement : budget selon le plan)',
+  fundShown:'Afficher dans l\'application',addFund:'Ajouter un fonds (projet, événement…)',eventBudgetS:'Budget par catégorie',addExpense:'Ajouter une dépense',budgetLbl:'Budget',newLeft:'Nouveau montant restant',editAll:'Modifier tous les budgets',editBudgets:'Modifier les budgets',editBudgetsIntro:'Indiquez ce qui reste à dépenser pour chaque catégorie (jusqu\'au prochain salaire / fin de mission). La différence est enregistrée.',
   missionLeftIntro:'Il reste ces montants de la mission précédente :',missionUnchecked:'Les montants non cochés sont remis à 0.',missionKeep:'Ajouter au même budget de la nouvelle mission',sinceDate:'Depuis le {d} (dernier salaire)',missionSince:'Mission depuis le {d}',startMission:'Nouvelle mission',
   sureMission:'Remettre les budgets ?',newMission:'Nouvelle mission',resetNote:'Remise à zéro',
   leftUnchecked:'Les budgets non cochés repartent de 0 (l\'argent reste dans vos portefeuilles).',leftFrom:'Argent pris dans le portefeuille',pickWallet2:'Choisissez le portefeuille utilisé',storedIn:'Argent reçu dans (pour savoir où il est)',pickWallet:'Choisissez le portefeuille où l\'argent est arrivé',
@@ -314,7 +315,8 @@ const TX = {
   transferSub:'Between wallets (+ fees)',moveSub:'From one budget to another',
   amount:'Amount',account:'Wallet',date:'Date',note:'Note (optional)',category:'Category',save:'Save',
   saved:'Saved',undo:'Undo',deleted:'Deleted',tapCat:'Tap a category to save',
-  withdrawGoal:'Use savings',advanced:'Advanced options',addExpense:'Add expense',budgetLbl:'Budget',newLeft:'New amount left',editAll:'Edit all budgets',editBudgets:'Edit budgets',editBudgetsIntro:'Type what is left to spend for each category (until the next salary / end of the mission). The difference is recorded.',
+  withdrawGoal:'Use savings',advanced:'Advanced options',fundKind:'Type',kindMission:'Repeated (missions: "Start new mission" resets the budgets)',kindEvent:'One-off (event: budget follows the plan)',
+  fundShown:'Show in the app',addFund:'Add a fund (project, event…)',eventBudgetS:'Budget per category',addExpense:'Add expense',budgetLbl:'Budget',newLeft:'New amount left',editAll:'Edit all budgets',editBudgets:'Edit budgets',editBudgetsIntro:'Type what is left to spend for each category (until the next salary / end of the mission). The difference is recorded.',
   missionLeftIntro:'These amounts are left from the previous mission:',missionUnchecked:'Unticked amounts are reset to 0.',missionKeep:'Add to the same budget in the new mission',sinceDate:'Since {d} (last salary)',missionSince:'Mission since {d}',startMission:'Start new mission',
   sureMission:'Reset the budgets?',newMission:'New mission',resetNote:'Reset',
   leftUnchecked:'Unticked budgets restart from 0 (the money stays in your wallets).',leftFrom:'Money taken from wallet',pickWallet2:'Choose the wallet used',storedIn:'Money received in (to know where it is)',pickWallet:'Choose the wallet where the money arrived',
@@ -372,7 +374,7 @@ function t(k){ return (TX[LANG] && TX[LANG][k]) || TX.fr[k] || k; }
 /* =====================================================================
    2. DEFAULT SET-UP
    ===================================================================== */
-const V = 6; // data-format version
+const V = 7; // data-format version
 const USABLE = ['urgency','health']; // savings that can be spent directly from the Expense form
 const EMO = {cash:'💵',orange:'🟠',mvola:'🟡',bank:'🏦',household:'🛒',savbank:'🏛️',savcash:'💰',zawallet:'🎶',fwcash:'🧭',
   rent:'🏠',jirama:'💡',food:'🍚',fuel:'⛽',transport:'🚌',maintenance:'🔧',laundry:'🧺',internet:'🌐',netflix:'🎬',
@@ -384,14 +386,17 @@ const LINES_V2 = {'c:rent':920000,'c:jirama':250000,'c:secretaria':94000,'c:secr
 
 /* Funds = money that is not yours (association, project). Kept apart from personal budgets and savings. */
 const FUNDS_DEF=[{id:'zaspafi',name_fr:'ZA SpaFi',name_en:'ZA SpaFi',emoji:'🎶',color:'#7c3aed',cats:false},
-                 {id:'fieldwork',name_fr:'Travail de terrain',name_en:'Field work',emoji:'🧭',color:'#4d7c0f',cats:true}];
+                 {id:'fieldwork',name_fr:'Travail de terrain',name_en:'Field work',emoji:'🧭',color:'#4d7c0f',cats:true,kind:'mission'},
+                 {id:'phd',name_fr:'Soutenance de thèse',name_en:'PhD defense',emoji:'📜',color:'#be123c',cats:true,kind:'event'}];
+// kind: 'mission' = repeated (Start new mission resets the budgets), 'event' = one-off (budgets just follow the plan)
 const FW_CATS=[['fw_v1','V1','V1','1️⃣'],['fw_v2','V2','V2','2️⃣'],['fw_v3','V3','V3','3️⃣'],['fw_fuel','Carburant terrain','Field fuel','⛽'],
   ['fw_comm','Participation communautaire','Community participation','🤝'],['fw_equip','Équipement','Equipment','🧰'],['fw_internet','Internet','Internet','📶'],
   ['fw_perdiem','Per diem','Per diem','🍽️'],['fw_salary','Salaire équipe','Team salary','👥'],['fw_transport','Transport','Transportation','🚙']];
 function fwCategories(start){ return FW_CATS.map(([id,fr,en,e],i)=>({id,name_fr:fr,name_en:en,active:true,order:start+i,emoji:e,fund:'fieldwork'})); }
 function fundAccounts(){ return [
   {id:'zawallet',name_fr:'Portefeuille ZA SpaFi',name_en:'ZA SpaFi wallet',opening:0,active:true,order:8,emoji:EMO.zawallet,spend:'',savings:false,fund:'zaspafi'},
-  {id:'fwcash',name_fr:'Espèces terrain',name_en:'Field work cash',opening:0,active:true,order:9,emoji:EMO.fwcash,spend:'',savings:false,fund:'fieldwork'}]; }
+  {id:'fwcash',name_fr:'Espèces terrain',name_en:'Field work cash',opening:0,active:true,order:9,emoji:EMO.fwcash,spend:'',savings:false,fund:'fieldwork'},
+  {id:'phdcash',name_fr:'Espèces soutenance',name_en:'PhD defense cash',opening:0,active:true,order:10,emoji:'📜',spend:'',savings:false,fund:'phd'}]; }
 
 function makeDefaults(){
   const A=(id,fr,en,o,spend,sav)=>({id,name_fr:fr,name_en:en,opening:0,active:true,order:o,emoji:EMO[id],spend:spend||'',savings:!!sav});
@@ -415,8 +420,8 @@ function makeDefaults(){
       G('julyvac','Vacances de juillet','July vacation','goal','2027-07-30',true,6),
       G('carrepair','Réparation voiture','Car repair','goal','2027-01-31',false,7)],
     Settings:{
-      version:V, startMonth: monthOf(today()), savAccount:'savbank', funds:FUNDS_DEF, savingMode:'equal', missions:{fieldwork:{start:today()}},
-      fundIncome:{fieldwork:{lines:FW_CATS.map(c=>({env:'c:'+c[0],amount:0}))}},
+      version:V, startMonth: monthOf(today()), savAccount:'savbank', funds:FUNDS_DEF, savingMode:'equal', missions:{fieldwork:{start:today()},phd:{start:today()}},
+      fundIncome:{fieldwork:{lines:FW_CATS.map(c=>({env:'c:'+c[0],amount:0}))},phd:{lines:[]}},
       salaries:[
         {id:'s1',name_fr:'Salaire 1',name_en:'Salary 1',amount:1500000,account:'bank',lines:[
           L('c:rent'),L('c:jirama'),L('c:secretaria'),L('c:secretariaroo'),L('c:netflix'),L('c:fuel'),L('c:godswork',62000)]},
@@ -441,6 +446,16 @@ function migrate(){
       if(g.id==='vacation'){ g.name_fr='Vacances de janvier'; g.name_en='January vacation'; } });
     (S.salaries||[]).forEach(s=>(s.lines||[]).forEach(l=>{ if(LINES_V2[l.env]!=null) l.amount=LINES_V2[l.env]; }));
     S.irregular=Object.assign({threshold:200000,savingsPct:70,personal:['aroo','ohanna','cece'],account:'bank'},S.irregular||{},{remainderGoal:'land'});
+  }
+  if(ver<7){
+    S.funds=S.funds||[];
+    S.funds.forEach(f=>{ if(f.cats&&!f.kind) f.kind='mission'; });
+    if(!S.funds.some(f=>f.id==='phd')) S.funds.push(FUNDS_DEF[2]);
+    fundAccounts().forEach(a=>{ if(!D.accounts.some(x=>x.id===a.id)) D.accounts.push(a); });
+    S.missions=S.missions||{}; if(!S.missions.phd) S.missions.phd={start:today(),at:new Date().toISOString()};
+    S.fundIncome=S.fundIncome||{}; S.fundIncome.phd=S.fundIncome.phd||{lines:[]};
+    call('apiSetSetting','funds',S.funds); call('apiSetSetting','missions',S.missions); call('apiSetSetting','fundIncome',S.fundIncome);
+    call('apiBulkUpsert','Accounts',D.accounts.filter(a=>a.id==='phdcash'));
   }
   if(ver<6){
     S.missions=S.missions||{};
@@ -575,8 +590,8 @@ function acts(list){ return list.filter(x=>isTrue(x.active)).sort(byOrder); }
 function wallets(){ return acts(D.accounts).filter(a=>!a.spend&&!isTrue(a.savings)&&!a.fund); }   // personal everyday wallets
 function savWallets(){ return acts(D.accounts).filter(a=>isTrue(a.savings)&&!a.fund); }           // where savings are physically kept
 function fundWallets(f){ return f?acts(D.accounts).filter(a=>!a.spend&&(!a.fund||a.fund===f)):wallets(); } // shared + the fund's own wallets
-function funds(){ return D.settings.funds||[]; }
-function fundObj(f){ return funds().find(x=>x.id===f); }
+function funds(){ return (D.settings.funds||[]).filter(f=>f.active!==false); }
+function fundObj(f){ return (D.settings.funds||[]).find(x=>x.id===f); }
 function fundName(f){ const o=fundObj(f); return f&&o?(em(o)+' '+nm(o)).trim():'👤 '+t('personal'); }
 function fundColor(f){ const o=fundObj(f); return o&&o.color||'#0f766e'; }
 function rf(r){ return r.fund||''; }
@@ -961,7 +976,7 @@ function fundSection(f,AB,m){
   const held=D.accounts.filter(a=>Math.round(FB.acc[a.id]||0)!==0).map(a=>`${em(a)} ${esc(nm(a))} ${fmtK(FB.acc[a.id])}`).join(' · ');
   let h=`<h2 class="sec" style="--c:${col};color:${col}"><span style="width:10px;height:10px;border-radius:3px;background:${col}"></span>${esc(em(f)+' '+nm(f))}<span class="tot">${fmt(tot)}</span></h2>
     <div class="fundcard" style="--c:${col}"><div class="held">${t('heldIn')}: ${held||'—'}</div>
-    ${f.cats?`<div class="row" style="margin-bottom:8px"><div class="grow muted">${periodStart(f.id)>'0001'?t('missionSince').replace('{d}',dateLabel(periodStart(f.id))):'—'}</div><button class="btn sm ghost" style="color:${col}" onclick="askMission(this,'${f.id}')">🔄 ${t('startMission')}</button></div>`:''}
+    ${f.cats&&f.kind!=='event'?`<div class="row" style="margin-bottom:8px"><div class="grow muted">${periodStart(f.id)>'0001'?t('missionSince').replace('{d}',dateLabel(periodStart(f.id))):'—'}</div><button class="btn sm ghost" style="color:${col}" onclick="askMission(this,'${f.id}')">🔄 ${t('startMission')}</button></div>`:''}
     ${(()=>{ if(!f.cats) return ''; const bp=cats(f.id).reduce((s,c)=>s+Math.max(0,FB.env['c:'+c.id]||0),0);
       return bp>0&&Math.round(bp-tot)>0?`<div class="muted" style="margin-bottom:8px;color:var(--warn)">⚠️ ${t('overBudget').replace('{b}',fmt(bp)).replace('{w}',fmt(tot)).replace('{d}',fmt(bp-tot))}</div>`:''; })()}
     ${(()=>{ const neg=fundWallets(f.id).filter(a=>Math.round(FB.acc[a.id]||0)<0); return neg.length?`<div class="muted" style="margin-bottom:8px">ℹ️ ${t('negWallet').replace('{w}',neg.map(a=>em(a)+' '+nm(a)).join(', '))}</div>`:''; })()}
@@ -1633,20 +1648,24 @@ function vSettings(){
     <div class="lbl">🎯 ${t('saving')} — ${t('shareHow')}</div><div class="pick" data-pick="savMode">${['equal','need'].map(m=>`<button type="button" class="${(S.savingMode||'equal')===m?'on':''}" data-v="${m}" onclick="pickOne(this)">${m==='equal'?'⚖️ '+t('equalParts'):'📈 '+t('byNeed')}</button>`).join('')}</div>
     <button class="btn sm" style="background:${SC.irr}" onclick="irSave()">${t('save')}</button></div>`);
   // funds
-  funds().forEach((f,fi)=>{
+  (S.funds||[]).forEach((f,fi)=>{
     let inner=`<div class="card"><div class="edS"><input value="${esc(f.emoji)}" id="fE${fi}" style="max-width:60px;text-align:center"><input value="${esc(f.name_fr)}" id="fF${fi}" placeholder="${t('nameFr')}"></div>
       <div class="edS" style="margin-top:6px"><input value="${esc(f.name_en)}" id="fN${fi}" placeholder="${t('nameEn')}"><input type="color" value="${esc(f.color)}" id="fC${fi}" style="height:36px;padding:2px"></div>
-      <button class="btn sm" style="margin-top:8px;background:${f.color}" onclick="fundSave(${fi})">${t('save')}</button></div>`;
+      ${f.cats?`<div class="lbl" style="margin-top:8px">${t('fundKind')}</div><select id="fK${fi}" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:7px">
+        <option value="mission" ${f.kind!=='event'?'selected':''}>🔄 ${t('kindMission')}</option><option value="event" ${f.kind==='event'?'selected':''}>📌 ${t('kindEvent')}</option></select>`:''}
+      <label class="check"><input type="checkbox" id="fA${fi}" ${f.active!==false?'checked':''}> ${t('fundShown')}</label>
+      <button class="btn sm" style="margin-top:4px;background:${f.color}" onclick="fundSave(${fi})">${t('save')}</button></div>`;
     if(f.cats){
       inner+=`<div class="lbl">${t('fundCats')}</div><div class="igrid">`+D.categories.filter(c=>c.fund===f.id).sort(byOrder).map(c=>edItem('Categories',c)).join('')+
         `<button class="additem" onclick="addItem('Categories','${f.id}')">+ ${t('add')}</button></div>`;
       const plan=((S.fundIncome||{})[f.id]||{}).lines||[], tot=plan.reduce((a,l)=>a+num(l.amount),0);
-      inner+=`<div class="card" id="fplan_${f.id}" style="margin-top:10px"><b>${t('fundIncomeS')}</b>`+
+      inner+=`<div class="card" id="fplan_${f.id}" style="margin-top:10px"><b>${f.kind==='event'?t('eventBudgetS'):t('fundIncomeS')}</b>`+
         plan.map((l,li)=>`<div class="line"><span class="lab">${esc(envName(l.env))}</span><input inputmode="numeric" data-l="${li}" value="${fmtIn(l.amount)}" oninput="this.value=fmtIn(num(this.value))"></div>`).join('')+
         `<div class="sum"><span>${t('total')}</span><span>${fmt(tot)}</span></div><button class="btn sm" style="background:${f.color}" onclick="planSave('${f.id}')">${t('save')}</button></div>`;
     }
-    h+=sec(esc(em(f)+' '+nm(f)),f.color,inner);
+    h+=sec(esc(em(f)+' '+nm(f))+(f.active===false?` <span class="chip">${t('hiddenItems')}</span>`:''),f.color,inner);
   });
+  h+=`<button class="additem" style="width:100%;margin-top:12px;--c:#0e7490" onclick="addFund()">+ ${t('addFund')}</button>`;
   // rollover
   const RO=S.rollover||{sources:[],targets:[]};
   h+=sec('🔁 '+t('rolloverRule'),SC.roll,`<div class="card"><div class="lbl">${t('sources')}</div><div style="margin:0 0 8px">`+
@@ -1726,9 +1745,25 @@ function addItem(table,fund){
   list.push(o); render();
   setTimeout(()=>{ const el=document.querySelector(`.item[data-id="${o.id}"] input[data-k="name_fr"]`); if(el){ el.scrollIntoView({block:'center'}); el.focus(); } },50);
 }
+/** New fund (project or event) with its own wallet and budget per category. */
+function addFund(){
+  const S=D.settings, id='f'+uid();
+  S.funds=S.funds||[]; S.funds.push({id,name_fr:'Nouveau fonds',name_en:'New fund',emoji:'📁',color:'#0e7490',cats:true,kind:'event'});
+  const w={id:'x'+uid(),name_fr:'Espèces – nouveau fonds',name_en:'New fund cash',opening:0,active:true,order:D.accounts.length+1,emoji:'📁',spend:'',savings:false,fund:id};
+  D.accounts.push(w);
+  S.missions=S.missions||{}; S.missions[id]={start:today(),at:new Date().toISOString()};
+  S.fundIncome=S.fundIncome||{}; S.fundIncome[id]={lines:[]};
+  call('apiSetSetting','funds',S.funds); call('apiSetSetting','missions',S.missions); call('apiSetSetting','fundIncome',S.fundIncome); call('apiUpsert','Accounts',w);
+  toast(t('saved')); render();
+  setTimeout(()=>{ const el=$('fF'+(S.funds.length-1)); if(el){ el.scrollIntoView({block:'center'}); el.select(); } },60);
+}
 function fundSave(fi){
   const f=D.settings.funds[fi];
   f.emoji=$('fE'+fi).value; f.name_fr=$('fF'+fi).value; f.name_en=$('fN'+fi).value; f.color=$('fC'+fi).value;
+  if($('fK'+fi)) f.kind=$('fK'+fi).value; f.active=$('fA'+fi).checked;
+  // the fund's own wallet follows the fund name when it still has the default one
+  const w=D.accounts.find(a=>a.fund===f.id&&/nouveau fonds|new fund/i.test(a.name_fr+a.name_en));
+  if(w){ w.name_fr='Espèces – '+f.name_fr; w.name_en=f.name_en+' cash'; w.emoji=f.emoji; call('apiUpsert','Accounts',w); }
   call('apiSetSetting','funds',D.settings.funds); toast(t('saved')); render();
 }
 function planSave(fund){

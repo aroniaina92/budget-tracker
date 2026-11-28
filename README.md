@@ -69,6 +69,8 @@ A plain *Transfer* between an everyday wallet and a savings wallet is refused (u
 - Same rule as your personal budgets: money received is recorded in the wallet where it arrived (you tap it, no default); Field work budgets are not tied to a wallet,
   and an expense can be paid from any Field work wallet — it is taken from the total Field work money. The fund block warns when its budgets are more than its money,
   and notes a wallet below 0 (unrecorded withdrawal/transfer).
+- **PhD defense** (📜): a one-off fund like Field work — its own wallet (*PhD defense cash*), its own categories (add them in Settings › PhD defense) and a budget per category, but no *Start new mission* (it is not repeated). Change its categories and budgets whenever needed.
+- **+ Add a fund** (bottom of the funds in Settings) creates another one (a project, a special event…) with its own wallet. Each fund can be renamed, recoloured, set as *Repeated* (missions, like Field work) or *One-off* (event), and hidden when finished (its history stays).
 - Home shows one coloured block per fund (total, where the money is, Income / Expense / Transfer buttons). Reports can be filtered by fund.
 
 **Wallets.** Tap any wallet block to see its **history** and **adjust its balance** (type the real amount):
